@@ -1,0 +1,160 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "tv.livebuy",
+    "module": "livebuy",
+    "version": "3.2.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.6"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.9.22"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "livebuy-3.2.0.aar",
+          "url": "livebuy-3.2.0.aar",
+          "size": 821738,
+          "sha512": "7e344869841f8249b0c94f68b40d081274ebd4640fc1e49c2d8821451d180b15a3e2afbf5d19cef2458ca0b44c70342c0586c41b3823bbe0dba8cfc938604da6",
+          "sha256": "1f82fabcd88c41efe546db732e5b99902f26e1f898605e400331a6389d48cc9b",
+          "sha1": "1b0684e9560f149b677057c64073a85b1b1b41fd",
+          "md5": "7ff471622dd81f4a6dbb3d3564560ab7"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.appcompat",
+          "module": "appcompat",
+          "version": {
+            "requires": "1.6.1"
+          }
+        },
+        {
+          "group": "androidx.recyclerview",
+          "module": "recyclerview",
+          "version": {
+            "requires": "1.3.2"
+          }
+        },
+        {
+          "group": "androidx.media3",
+          "module": "media3-exoplayer",
+          "version": {
+            "requires": "1.3.0"
+          }
+        },
+        {
+          "group": "androidx.media3",
+          "module": "media3-exoplayer-hls",
+          "version": {
+            "requires": "1.3.0"
+          }
+        },
+        {
+          "group": "androidx.media3",
+          "module": "media3-ui",
+          "version": {
+            "requires": "1.3.0"
+          }
+        },
+        {
+          "group": "androidx.media3",
+          "module": "media3-session",
+          "version": {
+            "requires": "1.3.0"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "ivs-player",
+          "version": {
+            "requires": "1.52.0"
+          }
+        },
+        {
+          "group": "com.google.code.gson",
+          "module": "gson",
+          "version": {
+            "requires": "2.10.1"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.7.3"
+          }
+        },
+        {
+          "group": "androidx.room",
+          "module": "room-runtime",
+          "version": {
+            "requires": "2.6.1"
+          }
+        },
+        {
+          "group": "androidx.room",
+          "module": "room-ktx",
+          "version": {
+            "requires": "2.6.1"
+          }
+        },
+        {
+          "group": "androidx.work",
+          "module": "work-runtime-ktx",
+          "version": {
+            "requires": "2.9.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.9.22"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "livebuy-3.2.0.aar",
+          "url": "livebuy-3.2.0.aar",
+          "size": 821738,
+          "sha512": "7e344869841f8249b0c94f68b40d081274ebd4640fc1e49c2d8821451d180b15a3e2afbf5d19cef2458ca0b44c70342c0586c41b3823bbe0dba8cfc938604da6",
+          "sha256": "1f82fabcd88c41efe546db732e5b99902f26e1f898605e400331a6389d48cc9b",
+          "sha1": "1b0684e9560f149b677057c64073a85b1b1b41fd",
+          "md5": "7ff471622dd81f4a6dbb3d3564560ab7"
+        }
+      ]
+    }
+  ]
+}
