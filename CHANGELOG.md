@@ -17,6 +17,91 @@ _Nothing yet._
 
 ---
 
+## [3.2.1] - 2026-07-15
+
+> **Patch — reference-ui-only, no BREAKING, core / view-model unchanged.** Version converges with the
+> iOS SDK `v3.2.1` and is **behaviorally equivalent** to it (not the same diff: iOS v3.2.1 added
+> background→foreground resume, which Android already had; this Android v3.2.1 adds PiP chrome-hiding and
+> chat auto-stick, which iOS already had — after both ship, the two platforms match). Both fixes bring
+> Android up to existing iOS behavior. The internal `versionName` (`X-SDK-Version`, `1.3.0`) is unchanged.
+
+### Fixed
+
+- **Picture-in-Picture renders video only** — the drop-in `LiveBuyPlayer` now hides the entire overlay
+  chrome (product card / chat / moments / subtitles) while in system PiP, matching iOS layer-based PiP's
+  native video-only presentation; full chrome is restored on return to foreground. (Verified on API 29 device.)
+- **Merged chat feed auto-stick to bottom** — new incoming messages push the feed up and keep it pinned to
+  the bottom when the user is at the bottom, driven by a persistent `autoStick` intent rather than the
+  instantaneous scroll position; scrolling away from the bottom no longer gets yanked back by new messages.
+  Fixes "new messages don't push up" and aligns with iOS.
+
+### Notes
+
+- No new / changed public symbols; existing host code needs no changes. Both fixes take effect automatically
+  for drop-in `LiveBuyPlayer` / `LiveBuyWidget` users.
+- All three modules re-publish at `3.2.1` (they share a single outward `version`); `:livebuy` / `:livebuy-ui`
+  AAR content is identical to `3.2.0` — only the coordinate version bumps.
+
+---
+
+## [3.2.0] - 2026-07-14
+
+> **Minor — default flip (`/stat` opt-in → default-on), no BREAKING, source-compatible.** Version aligned
+> to the iOS SDK `v3.2.0` (cross-platform lockstep) and feature-equivalent to the same-version iOS SDK.
+
+### ⚠ Behavior change (read before upgrading): `/stat` analytics now default-on (was default-off)
+
+`configure(...)`'s `enableStatReporting` default flips from `false` to `true`. After upgrading, a host that
+does **not** pass `enableStatReporting` will **start sending** `/stat` (10 event types — view counts / shares /
+add-to-cart / product impressions; endpoint `https://livebuy.tv/stat`, unsigned, form-urlencoded,
+fire-and-forget). To keep it off, pass `configure(..., enableStatReporting = false)` (fully preserves the
+headless no-op — nothing generated / persisted / sent). Safe to default-on because the `/stat` wire body
+carries only `type` + video / goods `id` (+ a few flags) — **no PII, no device id, no ip** (backend derives
+IP from `X-Forwarded-For`). This flips `/stat` only; `enableConversionAttribution` (Meta attribution ids
+`fbp` / `fbc` = PII) stays opt-in / default-off. ATT / GDPR consent remains the host's responsibility — a
+strict-compliance host should explicitly pass `enableStatReporting = false`.
+
+### Added
+
+- **Native `/stat` analytics subsystem (10 types)** — the SDK emits view / share / add-to-cart / product
+  impression stats natively, including `person_time` (watch duration) and `person_duration` (foreground dwell)
+  timers. **Default-on** (see behavior change); endpoint selectable to develop.
+- **`configure(..., enableStatReporting: Boolean = true, environment: LBEnvironment = LBEnvironment.PRODUCTION, enablePowerProfileAdaptation: Boolean = true)`**
+  — three new parameters, all with defaults (existing call sites unaffected).
+- **New `LBEnvironment`** (`PRODUCTION` / `DEVELOP`) — global environment selector; currently switches the
+  `/stat` endpoint (`DEVELOP` → `https://develop.livebuy.tv/stat`). Endpoint-only; does not change whether
+  stats are sent or the wire body / dedupe / timer / no-HMAC contracts.
+- **`notifyPictureInPictureModeChanged`** (public) — host forwards from the Activity's
+  `onPictureInPictureModeChanged`, closing the View-mode PiP gap.
+- **`LBEvent.POWER_PROFILE_CHANGED`** constant (emit logic is a follow-up; not emitted in this version).
+
+### Fixed
+
+- **Live heat optimization** — thermalStatus-aware auto-throttle (quality cap + polling backoff scaled by
+  temperature tier), the two live 5s polls coalesced onto a single loop tick (radio-wakeup power saving), and
+  a screen-aware quality cap that lowers live-decode heat. The reference-ui winner pulse ring throttles by
+  power profile.
+- **Widget preview / player background power** — app background (`ON_STOP`) pauses the fullscreen player and
+  widget carousel preview; off-screen widgets pause decoding; a widget covered by a fullscreen player pauses
+  the underlying preview — resuming on foreground / visibility. Eliminates ~150% background CPU heat.
+- **`LiveBuyPlayerView.unload()` idempotency guard** — repeated `unload()` no longer re-dispatches the end
+  event (aligns with iOS).
+- **Wire field null tolerance** — 4 nullable wire fields tolerated to remove mapper NPEs (aligns with iOS).
+
+### Changed
+
+- **onsale product-card dead code removed** — unused product-launch card producer / card code cleaned up
+  (no behavior change).
+
+### Notes
+
+- **Accumulating distribution channel** — `3.1.3` and `3.2.0` coexist in the channel; hosts pinned to
+  `3.1.3` are unaffected.
+- Outward Maven `version` (`3.2.0`) is decoupled from `:livebuy`'s internal `versionName` (`X-SDK-Version`);
+  the two differing is normal.
+
+---
+
 ## [3.1.3] - 2026-07-10
 
 > **First release published through the remote mirror channel.** The version is aligned to the iOS SDK
