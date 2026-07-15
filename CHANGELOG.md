@@ -17,6 +17,39 @@ _Nothing yet._
 
 ---
 
+## [3.2.2] - 2026-07-15
+
+> **Patch — reference-ui-only, no BREAKING, core / view-model unchanged.** Version converges with the iOS SDK
+> `v3.2.2` (both platforms cut 3.2.2 together, continuing the 3.2.0 / 3.2.1 pattern) — same number, different
+> diff: both share the presenter-driven widget-cover fix and the `LiveBuyWidgetVisibility` KDoc alignment,
+> while iOS 3.2.2 additionally carries a PiP-pause foreground-resume fix that is **N/A on Android** (Android has
+> no in-PiP pause control / seamless same-player continuation; the AVKit-restore defect is iOS-specific). Same
+> number = same parity level (as in 3.2.1); each platform ships through its own channel (Android Maven / iOS
+> SPM dist). The internal `versionName` (`X-SDK-Version`, `1.3.0`) is unchanged.
+
+### Fixed
+
+- **Home widget carousel preview yields the decoder when covered / minimized** — the drop-in
+  `CollapsibleLiveBuyPlayer` presenter now drives `setWidgetsCovered` by phase (fullscreen cover / minimized
+  floating), so the home widget carousel preview stops contending with the player for the decoder when it is
+  covered by a fullscreen player or shrunk to a floating window, and resumes when the widget becomes visible
+  again. Matches iOS presenter routing.
+- **`LiveBuyWidgetVisibility` KDoc aligned to presenter-owned two paths** — doc comment updated to describe
+  the presenter-owned two-path model, removing the stale `presentedVideo != null` example and the accepted
+  over-pause framing so the documented behavior matches the presenter routing above (doc-comment only, no
+  behavior change).
+
+### Notes
+
+- No new / changed public symbols; existing host code needs no changes. Both fixes take effect automatically
+  for drop-in `LiveBuyPlayer` / `LiveBuyWidget` users.
+- All three modules re-publish at `3.2.2` (they share a single outward `version`); `:livebuy` / `:livebuy-ui`
+  AAR content is identical to `3.2.1` (== `3.2.0`) — only the coordinate version bumps.
+- The channel is accumulating: `3.1.3` / `3.2.0` / `3.2.1` / `3.2.2` coexist; hosts pinned to an older
+  version are unaffected.
+
+---
+
 ## [3.2.1] - 2026-07-15
 
 > **Patch — reference-ui-only, no BREAKING, core / view-model unchanged.** Version converges with the
