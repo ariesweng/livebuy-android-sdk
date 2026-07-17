@@ -55,9 +55,9 @@ repositories {
 
 dependencies {
     // Drop-in default UI (most integrators want this) — pulls livebuy-ui + livebuy transitively.
-    implementation("tv.livebuy:livebuy-reference-ui:3.2.2")
+    implementation("tv.livebuy:livebuy-reference-ui:4.0.0")
     // Headless core only (composing your own UI):
-    // implementation("tv.livebuy:livebuy:3.2.2")
+    // implementation("tv.livebuy:livebuy:4.0.0")
 }
 ```
 
@@ -71,7 +71,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'tv.livebuy:livebuy-reference-ui:3.2.2'
+    implementation 'tv.livebuy:livebuy-reference-ui:4.0.0'
 }
 ```
 

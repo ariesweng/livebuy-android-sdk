@@ -17,6 +17,66 @@ _Nothing yet._
 
 ---
 
+## [4.1.0] - 2026-07-17
+
+> **Minor — no BREAKING, source-compatible.** Version aligned to the iOS SDK `v4.1.0` (cross-platform
+> lockstep) and feature-equivalent on the shared changes. Adds the `environment` data-API switch and the
+> prerecorded-live live-edge fix (both parity with iOS), plus two Android-only reference-ui line-height
+> tightenings. The internal `versionName` (`X-SDK-Version`, `1.3.0`) is unchanged.
+
+### Changed
+
+- **`configure(environment:)` now switches the data-API base URL too (previously `/stat` only)** —
+  `LBEnvironment.DEVELOP` now switches both the `/stat` endpoint **and** the data-API base URL to
+  `https://develop-admin.livebuy.tv/v1`; `PRODUCTION` (or omitted) keeps `https://api.livebuy.tv/v1`
+  (**default behavior unchanged**). The switch takes effect through the single `APIClient.baseURL`
+  chokepoint, covering every `/sdk/*` request (config / video / widget / poll / comments / event upload /
+  config refresh). The `/sdk/config` local cache key is environment-scoped (`DEVELOP` gets a `_develop`
+  suffix) so a prod / dev shared `shopId` cannot cross-pollute; `PRODUCTION` keeps the
+  `lb_sdk_config_{shopId}` key so existing production caches upgrade seamlessly. **Only the URL changes,
+  not the credentials** (a host switching to `DEVELOP` must supply its own dev credentials — the SDK ships
+  none); the HMAC signing mechanism is unchanged (signs `apiKey` + `timestamp` only). Removed the unused
+  `LOCAL_BASE_URL` dead code. **No new / renamed host-facing public symbols** (`LBEnvironment` cases
+  unchanged — pure behavior extension of an existing parameter).
+
+### Fixed
+
+- **Prerecorded-live live-edge wall-clock anchor fix (fixes 3 bugs in one, drop-in `LivebuyPlayer`)** —
+  prerecorded live (`liveStatus == 1`, IVS engine) previously lacked a wall-clock anchor and mistook the
+  full-length `duration` for the live edge, causing three symptoms: (1) **after app background / PiP, the
+  playhead froze on return to foreground and fell behind "now" without catching up to live** (the only
+  user-reachable path); (2) **`isBehindLiveEdge` was misjudged as replay for the whole session** (LIVE
+  badge lost, chat locked to replay mode); (3) **back-to-live jumped to the tail** (`performBackToLive`
+  sought to `duration`). This version establishes a wall-clock anchor model: on the first begin-align it
+  records `(anchorWallClock, anchorPosition = begin)`, and a pure function computes
+  `expectedLivePosition = anchorPosition + max(0, now − anchorWallClock)` (wall clock keeps advancing in
+  background / sleep); on foreground it re-aligns to live (seeks only when behind by >5s), `isBehindLiveEdge`
+  compares against `expectedLivePosition`, and back-to-live seeks to `expectedLivePosition` (clamped to
+  `duration`). The anchor persists for the whole session; re-align fires **only on background→foreground**
+  (a foreground manual pause is left alone to avoid clashing with a deliberate scrub-back). Fixes a
+  long-standing model defect (predates v4.0.0, not a rename regression). Mirrors iOS `35cd642e`
+  (both platforms ship together).
+
+- **Line-height tightened on two previously-missed reference-ui paths (Android-only)** — wrapped the
+  floating live-entry card `LivebuyLiveEntry` and the manual-assembly entry `WidgetOverlayView` (covers
+  carousel / grid / floating / minimized modes in one) in `ProvideTightText`, bringing them to parity with
+  `LivebuyWidget` / `CollapsibleLivebuyPlayer` so the LIVE red pill / text line-spacing no longer reads
+  loose on device. This is an Android Jetpack Compose-specific concern (`includeFontPadding` default);
+  iOS renders correctly already and has no corresponding change.
+
+### Notes
+
+- No new / changed public symbols; existing host code needs no changes. All three fixes / the environment
+  extension take effect automatically for drop-in `LivebuyPlayer` / `LivebuyWidget` users.
+- **Accumulating distribution channel** — `3.1.3` / `3.2.0` / `3.2.1` / `3.2.2` / `4.0.0` / `4.1.0` coexist;
+  hosts pinned to an older version are unaffected.
+- Outward Maven `version` (`4.1.0`) stays decoupled from `:livebuy`'s internal `versionName`
+  (`X-SDK-Version`, `1.3.0`); the two differing is normal.
+- **environment smoke verified** — the develop `POST /sdk/config` returns HTTP 200 / inner code 200 with a
+  valid `SDKConfig` body, confirming the base URL is correct, credentials valid, signature correct.
+
+---
+
 ## [4.0.0] - 2026-07-16
 
 > **⚠ MAJOR — BREAKING（品牌大小寫識別字改名）。** 全庫程式識別字由 `LiveBuy*` → `Livebuy*`（`liveBuy*` → `livebuy*`），與品牌顯示形（`Livebuy`）一致。**乾淨改名、無 `@Deprecated` alias**——自 `3.2.2` 升級者須一律改匯入的類別名。**不變**：Maven 座標 `tv.livebuy:livebuy` / `tv.livebuy:livebuy-ui` / `tv.livebuy:livebuy-reference-ui`、namespace `tv.livebuy.*`、內部 `versionName`（`X-SDK-Version` = `1.3.0`）、wire 行為。→ **host 的 Gradle 依賴行不變，只需改 `import` 進來的類別名。**
