@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the LiveBuy Android SDK (distributed via this mirror repository) will be
+All notable changes to the Livebuy Android SDK (distributed via this mirror repository) will be
 documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
@@ -17,11 +17,22 @@ _Nothing yet._
 
 ---
 
+## [4.0.0] - 2026-07-16
+
+> **⚠ MAJOR — BREAKING（品牌大小寫識別字改名）。** 全庫程式識別字由 `LiveBuy*` → `Livebuy*`（`liveBuy*` → `livebuy*`），與品牌顯示形（`Livebuy`）一致。**乾淨改名、無 `@Deprecated` alias**——自 `3.2.2` 升級者須一律改匯入的類別名。**不變**：Maven 座標 `tv.livebuy:livebuy` / `tv.livebuy:livebuy-ui` / `tv.livebuy:livebuy-reference-ui`、namespace `tv.livebuy.*`、內部 `versionName`（`X-SDK-Version` = `1.3.0`）、wire 行為。→ **host 的 Gradle 依賴行不變，只需改 `import` 進來的類別名。**
+
+### Changed
+
+- **公開型別改名 `LiveBuy*` → `Livebuy*`**（core `LivebuySDK` / `LivebuyEventListener` / `LivebuyPlayerView` / `LivebuyWidgetCore`、view-model `LivebuyUI`、reference-ui drop-in `LivebuyWidget` / `LivebuyPlayer` / `LivebuyLiveEntry` + 各 `*Config` / PiP helper / `LivebuyWidgetVisibility` 等）。
+- **`AndroidManifest` 綁定的 Activity 改名**（`LivebuyPlayerActivity` / `LivebuyPlayerHostActivity`）——以 FQN 啟動它們的 host 須同步改（無 alias 可遮）。
+
+---
+
 ## [3.2.2] - 2026-07-15
 
 > **Patch — reference-ui-only, no BREAKING, core / view-model unchanged.** Version converges with the iOS SDK
 > `v3.2.2` (both platforms cut 3.2.2 together, continuing the 3.2.0 / 3.2.1 pattern) — same number, different
-> diff: both share the presenter-driven widget-cover fix and the `LiveBuyWidgetVisibility` KDoc alignment,
+> diff: both share the presenter-driven widget-cover fix and the `LivebuyWidgetVisibility` KDoc alignment,
 > while iOS 3.2.2 additionally carries a PiP-pause foreground-resume fix that is **N/A on Android** (Android has
 > no in-PiP pause control / seamless same-player continuation; the AVKit-restore defect is iOS-specific). Same
 > number = same parity level (as in 3.2.1); each platform ships through its own channel (Android Maven / iOS
@@ -30,11 +41,11 @@ _Nothing yet._
 ### Fixed
 
 - **Home widget carousel preview yields the decoder when covered / minimized** — the drop-in
-  `CollapsibleLiveBuyPlayer` presenter now drives `setWidgetsCovered` by phase (fullscreen cover / minimized
+  `CollapsibleLivebuyPlayer` presenter now drives `setWidgetsCovered` by phase (fullscreen cover / minimized
   floating), so the home widget carousel preview stops contending with the player for the decoder when it is
   covered by a fullscreen player or shrunk to a floating window, and resumes when the widget becomes visible
   again. Matches iOS presenter routing.
-- **`LiveBuyWidgetVisibility` KDoc aligned to presenter-owned two paths** — doc comment updated to describe
+- **`LivebuyWidgetVisibility` KDoc aligned to presenter-owned two paths** — doc comment updated to describe
   the presenter-owned two-path model, removing the stale `presentedVideo != null` example and the accepted
   over-pause framing so the documented behavior matches the presenter routing above (doc-comment only, no
   behavior change).
@@ -42,7 +53,7 @@ _Nothing yet._
 ### Notes
 
 - No new / changed public symbols; existing host code needs no changes. Both fixes take effect automatically
-  for drop-in `LiveBuyPlayer` / `LiveBuyWidget` users.
+  for drop-in `LivebuyPlayer` / `LivebuyWidget` users.
 - All three modules re-publish at `3.2.2` (they share a single outward `version`); `:livebuy` / `:livebuy-ui`
   AAR content is identical to `3.2.1` (== `3.2.0`) — only the coordinate version bumps.
 - The channel is accumulating: `3.1.3` / `3.2.0` / `3.2.1` / `3.2.2` coexist; hosts pinned to an older
@@ -60,7 +71,7 @@ _Nothing yet._
 
 ### Fixed
 
-- **Picture-in-Picture renders video only** — the drop-in `LiveBuyPlayer` now hides the entire overlay
+- **Picture-in-Picture renders video only** — the drop-in `LivebuyPlayer` now hides the entire overlay
   chrome (product card / chat / moments / subtitles) while in system PiP, matching iOS layer-based PiP's
   native video-only presentation; full chrome is restored on return to foreground. (Verified on API 29 device.)
 - **Merged chat feed auto-stick to bottom** — new incoming messages push the feed up and keep it pinned to
@@ -71,7 +82,7 @@ _Nothing yet._
 ### Notes
 
 - No new / changed public symbols; existing host code needs no changes. Both fixes take effect automatically
-  for drop-in `LiveBuyPlayer` / `LiveBuyWidget` users.
+  for drop-in `LivebuyPlayer` / `LivebuyWidget` users.
 - All three modules re-publish at `3.2.1` (they share a single outward `version`); `:livebuy` / `:livebuy-ui`
   AAR content is identical to `3.2.0` — only the coordinate version bumps.
 
@@ -117,7 +128,7 @@ strict-compliance host should explicitly pass `enableStatReporting = false`.
 - **Widget preview / player background power** — app background (`ON_STOP`) pauses the fullscreen player and
   widget carousel preview; off-screen widgets pause decoding; a widget covered by a fullscreen player pauses
   the underlying preview — resuming on foreground / visibility. Eliminates ~150% background CPU heat.
-- **`LiveBuyPlayerView.unload()` idempotency guard** — repeated `unload()` no longer re-dispatches the end
+- **`LivebuyPlayerView.unload()` idempotency guard** — repeated `unload()` no longer re-dispatches the end
   event (aligns with iOS).
 - **Wire field null tolerance** — 4 nullable wire fields tolerated to remove mapper NPEs (aligns with iOS).
 

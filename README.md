@@ -1,11 +1,11 @@
-# LiveBuy Android SDK
+# Livebuy Android SDK
 
 Embed live shopping experiences — live streams, replays, and shoppable VODs — directly into your
 Android app.
 
 > **Architecture.** The SDK ships as **three prebuilt AAR modules** under a single Maven coordinate
 > family. `tv.livebuy:livebuy` is a **headless** core (it renders no UI). The turnkey, ready-to-use UI
-> ships as drop-in Jetpack Compose containers (`LiveBuyPlayer` / `LiveBuyWidget` / `FloatingWidgetView`)
+> ships as drop-in Jetpack Compose containers (`LivebuyPlayer` / `LivebuyWidget` / `FloatingWidgetView`)
 > in **`tv.livebuy:livebuy-reference-ui`**. Most integrators declare only `livebuy-reference-ui` and
 > Gradle resolves the whole chain. Teams that want to draw every pixel themselves depend on the
 > headless core directly and compose their own views.
@@ -90,7 +90,7 @@ dependencies {
 |---|---|---|
 | Core (headless) | `tv.livebuy:livebuy` | networking, sessions, playback-engine selection |
 | View-model layer | `tv.livebuy:livebuy-ui` | headless (zero-pixel) view-models |
-| Reference UI | `tv.livebuy:livebuy-reference-ui` | drop-in Compose UI (`LiveBuyPlayer` / `LiveBuyWidget` / `FloatingWidgetView`) |
+| Reference UI | `tv.livebuy:livebuy-reference-ui` | drop-in Compose UI (`LivebuyPlayer` / `LivebuyWidget` / `FloatingWidgetView`) |
 
 ---
 
@@ -102,14 +102,14 @@ Call `configure` once at app launch, before any SDK feature is used. It is a `su
 from a coroutine.
 
 ```kotlin
-import tv.livebuy.sdk.LiveBuySDK
+import tv.livebuy.sdk.LivebuySDK
 
 lifecycleScope.launch {
-    LiveBuySDK.configure(
+    LivebuySDK.configure(
         context = applicationContext,
-        apiKey = "12345",        // String (numeric string) — provided by LiveBuy
-        secret = "your-secret",  // HMAC signing secret — provided by LiveBuy
-        shopId = "Pw8PJ99J",     // required — provided by LiveBuy
+        apiKey = "12345",        // String (numeric string) — provided by Livebuy
+        secret = "your-secret",  // HMAC signing secret — provided by Livebuy
+        shopId = "Pw8PJ99J",     // required — provided by Livebuy
         // lang = "en",          // optional language override (zh-TW / zh-CN / en / ms-MY / id-ID)
     )
 }
@@ -117,14 +117,14 @@ lifecycleScope.launch {
 
 ### 2. Present the Player
 
-`LiveBuyPlayer` is a turnkey Jetpack Compose container. It assembles the headless engine + the default
+`LivebuyPlayer` is a turnkey Jetpack Compose container. It assembles the headless engine + the default
 chrome (header / rail / info panel / product + chat overlays) and starts playback.
 
 ```kotlin
-import tv.livebuy.reference.LiveBuyPlayer
+import tv.livebuy.reference.LivebuyPlayer
 
 setContent {
-    LiveBuyPlayer(videoId = "abc123")
+    LivebuyPlayer(videoId = "abc123")
 }
 ```
 
@@ -132,28 +132,28 @@ Wire interactions through the player config (every closure is optional with a se
 `onLogin` is effectively required for any integration whose guests may hit a login gate):
 
 ```kotlin
-LiveBuyPlayer(
+LivebuyPlayer(
     videoId = "abc123",
     onProductTap = { product -> /* open your product detail page — product.id, product.name, product.goodsGpn */ },
-    onLogin = { /* open your login flow; on success call LiveBuySDK.login(...) */ },
+    onLogin = { /* open your login flow; on success call LivebuySDK.login(...) */ },
 )
 ```
 
 ### 3. Embed a Widget
 
-`LiveBuyWidget` lists a shop's videos (horizontal carousel or infinite-scroll grid).
+`LivebuyWidget` lists a shop's videos (horizontal carousel or infinite-scroll grid).
 
 ```kotlin
-import tv.livebuy.reference.LiveBuyWidget
+import tv.livebuy.reference.LivebuyWidget
 
-LiveBuyWidget(shopId = "Pw8PJ99J")                          // carousel (default)
-LiveBuyWidget(shopId = "Pw8PJ99J", mode = WidgetMode.Grid) // infinite-scroll grid
+LivebuyWidget(shopId = "Pw8PJ99J")                          // carousel (default)
+LivebuyWidget(shopId = "Pw8PJ99J", mode = WidgetMode.Grid) // infinite-scroll grid
 ```
 
 Tapping a card does nothing until you wire it:
 
 ```kotlin
-LiveBuyWidget(
+LivebuyWidget(
     shopId = "Pw8PJ99J",
     onTapVideo = { video -> /* open your player page — video.id, video.title */ },
     onSeeMore = { /* push your "see all" page */ },
@@ -161,7 +161,7 @@ LiveBuyWidget(
 ```
 
 > The full integration guide (Kotlin + Compose — login / add-to-cart / view-cart) lives in the monorepo
-> handoff doc; request it from LiveBuy.
+> handoff doc; request it from Livebuy.
 
 ---
 
@@ -169,10 +169,10 @@ LiveBuyWidget(
 
 The SDK funnels every user interaction and system signal through a single event listener. Install one
 listener and dispatch by `eventName` (`CART_ADD_REQUEST`, `AUTH_REQUIRED`, `PRODUCT_CLICK`, …). Attach a
-logged-in user with `LiveBuySDK.login(memberId, memberName, avatarUrl)` /
-`LiveBuySDK.bindSession(...)`; clear on logout with `LiveBuySDK.clearUser()`.
+logged-in user with `LivebuySDK.login(memberId, memberName, avatarUrl)` /
+`LivebuySDK.bindSession(...)`; clear on logout with `LivebuySDK.clearUser()`.
 
-Tier 2 add-to-cart: the SDK adds to the LiveBuy backend cart, then fires `CART_ADD_REQUEST` as a
+Tier 2 add-to-cart: the SDK adds to the Livebuy backend cart, then fires `CART_ADD_REQUEST` as a
 notification — the host adds to its own cart and (best-effort) calls `reportCartTrack(...)` for
 attribution. See the integration guide for the full event catalogue and cart flow.
 
@@ -201,4 +201,4 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-Copyright © LiveBuy. All rights reserved.
+Copyright © Livebuy. All rights reserved.
