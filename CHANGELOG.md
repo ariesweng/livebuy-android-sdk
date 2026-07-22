@@ -11,9 +11,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
-## [Unreleased]
+## [4.2.0] - 2026-07-22
 
-_Nothing yet._
+> **Minor — no BREAKING, source-compatible.** Version aligned to the iOS SDK `v4.2.0` (cross-platform
+> lockstep) and feature-equivalent on the shared changes. Adds the in-progress live-event (live giveaway)
+> host-facing exposure (all parity with iOS), plus a batch of drop-in reference-ui fixes (turnkey
+> giveaway "join" / real shop logos / spec-linked product-detail price & photo) and the `WIN_RECEIVED`
+> dedup parity fix. The internal `versionName` (`X-SDK-Version`, `1.3.0`) is unchanged.
+
+### Added（新公開符號，皆 additive、源碼相容、無 breaking）
+
+- **`ACTIVE_EVENT_STARTED` notification event (in-progress live event / live giveaway)** — the SDK
+  dispatches this when `POST /sdk/video/goods` returns an `event[]` entry it has not notified before
+  (**fire-once per event id**; the dedup set is cleared on video switch). Params (flat):
+  `{ id, title, keyword?, duration, surplus, award }` — `keyword` (the "join event" passphrase) is
+  omitted when empty, `surplus` is a seconds snapshot at dispatch time (the host counts down locally
+  from `duration` + the wall-clock time it received the event), and `award` reuses the winner
+  `[{type, name, code}]` shape. **Does not carry `stayTime`** (a turnkey-internal dwell threshold).
+  Lets the host draw its own event countdown / prize teaser / join-event entry point.
+- **`LBActiveEvent` public model** — `{ id, title, keyword, award, duration, surplus, stayTime }`,
+  produced via the `core/dto` → `core/mapper` route (not a Gson-decoded type, consistent with the other
+  mapped public models). `LBVideoGoodsResponse.event` is promoted from internal to **public** alongside it.
+- **`activeEvents()` public accessor** — returns a snapshot of the in-progress events in the current
+  goods cache, covering the late-subscriber blind spot where a host that attaches mid-stream would miss
+  the fire-once `ACTIVE_EVENT_STARTED` event.
+
+### Fixed / drop-in behavior（reference-ui + turnkey，drop-in `LivebuyPlayer` 使用者自動生效）
+
+- **Turnkey live-giveaway "join" (drop-in `LivebuyPlayer`)** — when the host does not intercept
+  `EVENT_JOIN_INTENT`, the drop-in container now auto-sends the join passphrase comment (carrying
+  `event_id` + a pure wall-clock `stay_time` that keeps counting in the background and resets per video),
+  so the host needs no wiring to take part. The poll fires a fire-once `eventstay` per in-progress event
+  each round. Mirrors iOS (both platforms ship together).
+- **Shop logo now drawn as the real image (drop-in player header row + product-info panel shop row)** —
+  both shop rows now render the real merchant logo (the gradient monogram chip drops to an always-drawn
+  underlay placeholder rather than being the only presentation). Matches iOS / the info panel.
+- **Product-detail sheet price / main photo follow the selected spec (drop-in `ProductDetailSheet`)** —
+  after picking a spec, the **sale / original price** and the **main photo / zoom lightbox** now switch to
+  that spec (previously the price stayed at the product level — a **misleading bug** — and the photo did
+  not follow the spec); source validity and the drawn item share a single predicate. Mirrors iOS (both
+  platforms ship together).
+- **`WIN_RECEIVED` dedup set now cleared on video switch / unload (parity with iOS)** — the winner
+  dedup set (`notifiedWinnerIds`) was not reset when switching video or unloading, so a re-entry /
+  video switch could wrongly suppress a legitimate `WIN_RECEIVED`. It is now cleared to match the iOS
+  behavior (fixes a long-standing four-platform parity gap, not a rename regression).
+
+### Notes
+
+- No new / changed **existing** public symbols; the newly added symbols are additive, so existing host
+  code needs no changes. The ACTIVE_EVENT API is for headless-host consumption; the drop-in fixes take
+  effect automatically for `LivebuyPlayer` / `LivebuyWidget` users.
+- **`WIN_RECEIVED` params KDoc correction (no wire / behavior change)** — the event-registry winner
+  params were corrected from a never-populated phantom `name` field to the actual wire `event_id` /
+  `title` (the emit logic already sent `event_id` / `title`; only the generated KDoc was wrong from the
+  stale source). The **dispatched params are unchanged** — hosts see no difference.
+- **Accumulating distribution channel** — `3.1.3` / `3.2.0` / `3.2.1` / `3.2.2` / `4.0.0` / `4.1.0` /
+  `4.2.0` coexist; hosts pinned to an older version are unaffected.
+- Outward Maven `version` (`4.2.0`) stays decoupled from `:livebuy`'s internal `versionName`
+  (`X-SDK-Version`, `1.3.0`); the two differing is normal.
 
 ---
 
