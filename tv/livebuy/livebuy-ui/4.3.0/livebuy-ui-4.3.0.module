@@ -1,0 +1,104 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "tv.livebuy",
+    "module": "livebuy-ui",
+    "version": "4.3.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.6"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "tv.livebuy",
+          "module": "livebuy",
+          "version": {
+            "requires": "4.3.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.9.22"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "livebuy-ui-4.3.0.aar",
+          "url": "livebuy-ui-4.3.0.aar",
+          "size": 231122,
+          "sha512": "b2d5cf54456110c780363f350f391a82b388a0af5f78218fd63dcf68c7c776bf5064ce5c0aef8ba0327cb039563209737ef0b9615099855657b4743a34d6b442",
+          "sha256": "4b855114acc7eff329a3595fb604e7d9a9346a4d2edd71c7d274762002aab42f",
+          "sha1": "c887b32c95598fc03f1810b44155fda3ceca8244",
+          "md5": "59657c5abf67ba38ed461a8249ac39b5"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.browser",
+          "module": "browser",
+          "version": {
+            "requires": "1.8.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.7.3"
+          }
+        },
+        {
+          "group": "tv.livebuy",
+          "module": "livebuy",
+          "version": {
+            "requires": "4.3.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.9.22"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "livebuy-ui-4.3.0.aar",
+          "url": "livebuy-ui-4.3.0.aar",
+          "size": 231122,
+          "sha512": "b2d5cf54456110c780363f350f391a82b388a0af5f78218fd63dcf68c7c776bf5064ce5c0aef8ba0327cb039563209737ef0b9615099855657b4743a34d6b442",
+          "sha256": "4b855114acc7eff329a3595fb604e7d9a9346a4d2edd71c7d274762002aab42f",
+          "sha1": "c887b32c95598fc03f1810b44155fda3ceca8244",
+          "md5": "59657c5abf67ba38ed461a8249ac39b5"
+        }
+      ]
+    }
+  ]
+}

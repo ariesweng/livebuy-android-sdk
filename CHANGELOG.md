@@ -11,6 +11,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.3.0] - 2026-07-28
+
+> **Minor — no source-breaking change, source-compatible.** Version aligned to the iOS SDK `v4.3.0`
+> (cross-platform lockstep) and feature-equivalent on the shared changes. Ships the win-claim email
+> flow (`AWARD_CLAIM_RESULT` 4 → 10 keys + a four-stage turnkey claim sheet), product-award
+> auto-add-to-cart (`CART_ADD_REQUEST` gains an optional `award_winner_id`), the three-gate join-event
+> CTA, and one drop-in bug fix — plus **one behavior change** to `AUTH_STATE_CHANGED.display_name`
+> (see the `Changed` section below, read it first). The internal `versionName` (`X-SDK-Version`,
+> `1.3.0`) is unchanged. 詳見
+> [`docs/release/v4.3.0-tag-runbook.md`](../docs/release/v4.3.0-tag-runbook.md)、
+> [真機 e2e 檢查表](../docs/release/v4.3.0-e2e-checklist.md) 與
+> [release notes](../docs/release-notes/v4.3.0.md)。
+
+### Changed（⚠️ 行為變更 — 唯一「不改碼但行為會變」的一條，請先讀）
+
+- **⚠️ `AUTH_STATE_CHANGED` 的 `display_name` 語意收斂為「使用者自己選定的名字；未選定時為空字串 `""`」**
+  （`9a5bb811`，iOS + Android dual）。**Android 側的實際變化**：`clearUser()` 原本**根本沒帶**
+  `display_name` 這個 key（消費端解為 `""`，且與 `tools/event-codegen/events.json` 宣告的必填
+  `"display_name": "string"` **契約不完整**）；本版**補上 key**，值為 `""`（或訪客自選暱稱）。
+  `setUser` / `state == "logged_in"` 的既有行為**完全不變**。
+  - **與 iOS 的差異**：iOS 是從回填系統預設名 `"Guest_4F2A"` 改為 `""`（行為實質改變）；Android 是從
+    「沒有 key」改為「有 key 且為空字串」（**解出來的值不變、契約補齊**）。因此 **Android host 受影響的
+    可能性遠低於 iOS**——若你原本就對缺 key 做預設空字串處理，本版對你是無感的。
+  - **為什麼**：turnkey 的暱稱閘判定是「未登入且 `display_name` 為空 → 要求先設暱稱」。iOS 因為回填了
+    非空的預設名，讓「登入過又登出」的訪客被判成「已設過名」，**連留言都不會被要求設暱稱**。
+    Android 原本行為才是對的，本版把兩端語意統一並補齊 Android 的 key。
+  - **非源碼破壞**：事件名稱、參數 key、參數型別、公開方法簽名**皆不變**，重新編譯不會壞——故仍走 minor。
+  - **host 因應**：若你在登出 / 訪客狀態下拿 `display_name` 當「畫面上要顯示的名字」直接用，
+    **MUST 自行 fallback**（值為空時改用你自己的訪客預設稱呼，或引導使用者取名）。
+  - **明確不受影響：`resolvedDisplayName`** —— 聊天 wire 送出用的名字**仍保留 `Guest_XXXX` fallback，
+    一字未改**。留言送出後顯示的名字不會變空白；變的只有 `AUTH_STATE_CHANGED` 帶給你的那個值。
+
+### Added（新公開面，皆 additive、源碼相容、無 breaking）
+
+- **`AWARD_CLAIM_RESULT` params 由 4 key 擴為 10 key**（`c23888f7`，parity iOS `a1be0fd2`；codegen 描述
+  `a8adb6ad`）——新增 `winner_id` / `event_title` / `award_name` / `award_expiration` /
+  `award_image_url` / `award_stock`；既有 `status` / `award_type` / `event_id` / `award_code` 的語意與
+  觸發時機**完全不變**（**純新增 key、向後相容**）。欄位分兩類——**記憶體來源**（`status` /
+  `award_type` / `winner_id` / `event_title`，成功失敗都可靠）與 **API 回應來源**（其餘六個，僅成功才
+  有）；nil / 空字串的 key **整個省略**；失敗只帶記憶體來源欄位；`award_stock` 含 `0`（＝無庫存）；
+  `award_code` / `award_expiration` 僅折扣型獎品。**SDK 領獎成功後不導頁、不渲染**，資訊交 host 處理。
+- **`CART_ADD_REQUEST` 新增選填 `award_winner_id`**（`cedea84d`，parity iOS `809741a7`；codegen 描述
+  `dd57ae54`）——本筆加購由獎品領獎觸發時才帶，值＝中獎票券 id（同 `AWARD_CLAIM_RESULT` 的
+  `winner_id`）；非獎品觸發時**整個省略 key**。typed accessor `LBCartAddRequest.awardWinnerId`
+  **刻意為 optional**（缺 key → `null`，不退空字串）。
+- **view-model 層新增帶 email 的領獎提交入口**（`c3e09d08`，parity iOS `f1bfb841`）—— 含 email 驗證純
+  函式、`submitInFlight` 送出中狀態、`dismissClaim()`。**舊 EMAIL-LESS 入口 deprecated 但保留、源碼相容。**
+
+### Fixed / drop-in behavior（reference-ui + turnkey，drop-in `LivebuyPlayer` 使用者自動生效）
+
+- **中獎領獎補 email 欄位 → turnkey 內建領獎 sheet 改為四階段流程**（`cb60d95c`，parity iOS
+  `62133e9c`）—— 由「單頁通知型 sheet」改為 `claim`（填 email）→ `confirmSubmit` / `confirmClose`
+  （二次確認）→ `submitting`（送出中）→ `done` / `fail`。**修好一整類「中獎領取失敗」**：core 領獎路徑
+  `email` **必填**，而舊 sheet 不收 email，host 未攔截又沒有 email 時 SDK fail-fast、**連領獎請求都沒送
+  出**，訪客沒有任何地方能填。關閉為**純 dismiss**（中獎票保留、徽章不變、可再次領取）；fail 卡顯示
+  通用錯誤文案（後端不區分失敗原因）。另修好 view-model 讀錯 key 導致 `claimedWinnerId` 取不到值的
+  bug（`d73da5ea`，改讀正確的 `winner_id`）。email 為**純聯絡用、非識別鍵**（後端已確認）：填錯不構成
+  領獎失敗、同一 email 可領多個獎、登入態可預填會員 email 但應保持可編輯。**訪客確實能參加、中獎、
+  領獎**，訪客中獎後才登入**不會掉票**。
+- **商品獎品領獎成功後自動加入購物車**（`cedea84d`）—— `award_type == "product"` 的獎品領獎成功後
+  SDK 自動加購，該筆領獎共派**兩個事件**：`AWARD_CLAIM_RESULT`（claim 成功即派）→ `CART_ADD_REQUEST`
+  （addcart 成功後派）。**discount 型完全不受影響**（只有一個事件，行為一字未改）。加購失敗時獎品
+  **仍算領到**（`status` 維持 `claimed`）且依既有契約**不派任何事件**——host 判斷方式＝收到
+  `AWARD_CLAIM_RESULT(claimed, award_type=product)` 卻沒有配對的 `CART_ADD_REQUEST`；此情境下 host 只有
+  獎品名稱與圖片、**沒有 host 側商品 id**，無法自行補進自家車（刻意的最小對外面積取捨）。獎品加購
+  **豁免 30 秒防重複建單窗口**、且**不送**加購轉換埋點（0 元獎品不是加購轉換）。
+- **加入活動 CTA 套用與留言一致的三層閘**（`640a40eb`，parity iOS `efcd06a1`）—— 修好「**沒設暱稱卻能
+  參加抽獎**」：參加活動本質上就是送一則帶 `event_id` 的口令留言，卻沒有任何閘。現在 drop-in 的加入活動
+  CTA 走 ①登入閘（依 `sdkConfig` 訪客留言開關）→ ②暱稱閘（未登入且沒自選過暱稱）→ ③通過才送出，
+  並在閘攔截後**續作**（pending-join，完成登入 / 設暱稱後自動接續原動作）。閘攔截時**一併抑制 host
+  觀察 callback**（`d33ce9d0`），讓「host 收到 join 通知」與「參加真的送出」的觸發條件收成 **iff**——
+  host 不會再收到「假參加」訊號。
+- **自動接播後重試會載到已播完那支**（`0b641c28`，Android-only 修復）—— core 自動接播下一支後，drop-in
+  容器記的 shown video id 沒跟著同步，使用者一按重試就重新載入**已經播完的那支**。容器現在會在 core
+  自動接播後同步該 id。
+
+### Notes
+
+- **未新增 / 移除 / 改名任何既有 host-facing public 符號**、無參數型別變更、無 wire 破壞。本版唯一需要
+  host 留意的是上方 `Changed` 小節的 `display_name` 語意（Android 側影響面小於 iOS）。
+- **發佈通道**：Pages `maven-metadata.xml` 為**累加**語意——本版上線後**八版並存**
+  （3.1.3 / 3.2.0 / 3.2.1 / 3.2.2 / 4.0.0 / 4.1.0 / 4.2.0 / 4.3.0），舊版仍可解析。
+- **RN / Flutter 本輪不發**（停在待發 `2.0.0`）；本版四個主題於其主線皆已落地，隨各自 2.0.0 出貨。
+
 ## [4.2.0] - 2026-07-22
 
 > **Minor — no BREAKING, source-compatible.** Version aligned to the iOS SDK `v4.2.0` (cross-platform
