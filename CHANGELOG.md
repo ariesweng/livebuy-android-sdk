@@ -11,6 +11,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.4.0] - 2026-07-31
+
+> **Minor — no source-breaking change, source-compatible (one behavior BREAKING, see `Changed`).**
+> Version aligned to the iOS SDK `v4.4.0` (cross-platform lockstep) and feature-equivalent on the
+> shared changes. Ships the URL-open policy + host routing (including two real Android security
+> bypass fixes), guest-nickname verification hardening, and clickable win-claim modal footer links.
+> The internal `versionName` (`X-SDK-Version`, `1.3.0`) is unchanged. 詳見
+> [`docs/release/v4.4.0-tag-runbook.md`](../docs/release/v4.4.0-tag-runbook.md) 與
+> [release notes](../docs/release-notes/v4.4.0.md)。
+
+### Changed（⚠️ 行為變更 — 唯一「不改簽章但行為會變」的一條，請先讀）
+
+- **⚠️ 商品導購頁連結（`diversion == 1`，host 未攔截時）改依網址分流**（`a15163a5`，parity iOS
+  `5457c97e`；消費 core `d408b23a` 新增的 `LBURLOpenPolicy.decide(rawUrl:)`）。**規則**：
+  `livebuy.tv`（含任意層子網域）→ 維持 in-app（Chrome Custom Tabs）；其他可開網址
+  （`http`/`https`/`mailto`/`tel`/`sms`）→ 系統瀏覽器；不在允許清單內（`javascript:` /
+  `intent:` / `data:` / `file:` / 自訂 scheme 等）→ 安全 no-op（先前無 scheme 過濾，可能被原樣
+  丟進 `CustomTabsIntent`）。**典型後果**：非 `livebuy.tv` 網域的商品導購頁會從 Custom Tabs 改
+  為 eject 到系統瀏覽器——這是刻意的行為變更，不是 regression。host 攔截順序逐字不變，策略只在
+  host 未攔截時套用。**API 面零破壞**：`DefaultPlayerTemplate` 建構子本來就是 `internal`，host
+  從未能注入 opener，相容性只涉及 `livebuy-ui` 模組內與其測試。Android 本輪只有商品導購頁這一個
+  出口（客服連結呈現在 reference-ui 層，本輪未動）。
+
+### Added（新公開面，皆 additive、源碼相容、無 breaking）
+
+- **`tv.livebuy.sdk.core.LBURLOpenPolicy.decide(rawUrl: String)` / `LBURLOpenTarget` /
+  `LBLegalLinks.TERMS_OF_USE` / `.PRIVACY_POLICY`**（`d408b23a`，parity iOS `dcea410f`）——純函式
+  URL 開啟目標裁決規則與法務連結網址事實來源，發布時尚無 production 消費者（純新增）。🔴 **一併
+  修掉兩個真實繞過**：① `intent:` scheme 先前未過濾，`diversionUrl` 這類後端可控字串可被原樣送進
+  `CustomTabsIntent`（公認可觸達任意 exported component 的向量），新策略的正面 scheme 允許清單在
+  呈現之前就擋下它；② API ≤ 26（`minSdk` 是 24，實際出貨環境）`android.net.Uri` 以 authority 內
+  **第一個** `@` 切 userinfo 的解析差異，會把 authority 中間片段誤判為 host（例如
+  `https://a@develop.livebuy.tv:8443@attacker.example/x` 誤判 host 為 `develop.livebuy.tv`，
+  真實連線目標其實是 `attacker.example`），修法為 in-app 授予加上第二個連言條件（解析器回報的
+  host 須與 authority 依 WHATWG 推導的 host 一致）。host 不需要做任何事，兩者皆在 SDK 內部判定
+  完成。
+- **`LivebuyPlayerView.suspend fun setGuestNicknameVerified(name: String)`**（`6cc0f973`，parity
+  iOS `81a76425`）——設定留言暱稱前先對目前 video 呼叫既有 `checkName` 驗證，通過才持久化 + 廣播
+  `AUTH_STATE_CHANGED`；被取走或其他錯誤一律不持久化、不廣播，拋出可分辨的 `LBError`（複用既有
+  `GuestNameTaken` / `NetworkError` 等分類，不新增 case）。既有 `LivebuySDK.setGuestNickname(name)`
+  （同步、無驗證）簽章與行為不變。
+- **`setGuestNicknameVerified` 不再有靜默成功路徑**（`4f5b4adf`，parity iOS `12c894a4`）——先前
+  有三道 `return` 會在完全沒有提交暱稱的情況下正常返回（名稱 trim 後為空 / SDK 未 configure /
+  播放器未載入影片）。現在一律 `throw`：SDK 未 configure → 複用既有 `LBError.NotConfigured`；
+  名稱為空或無影片 → **新增** `LBError.NicknameSetPreconditionFailed`（`object`），
+  `LivebuySDK.errorCode()` 補上 `"nickname_set_precondition_failed"` 映射（與 iOS 字串逐字一致）。
+  public 簽章不變（本來就是 `suspend fun`），成功路徑與 `checkName` 失敗映射完全不變。⚠️
+  `LBError` 是 `sealed class` 且既有 `when` 分支已有 `else`，新增此 `object` **不會**讓既有程式碼
+  編譯失敗（與 iOS Swift exhaustive switch 不同）；若你的 `when` 對 `LBError` 做 exhaustive 處理
+  且沒有 `else`，需留意新增這個 case。
+
+### Fixed / drop-in behavior（reference-ui + turnkey，drop-in `LivebuyPlayer` 使用者自動生效）
+
+- **中獎領獎 sheet 底部使用條款／隱私政策改為可點擊**（`fc278b0b`，parity iOS `55ef0e8d`）——先前
+  是單一組合字串、純版面佔位；現在拆成兩段各自可點擊，經 `LBURLOpenPolicy.decide()` 裁決開啟方式
+  （Chrome Custom Tabs / 系統瀏覽器 / 安全 no-op），連結來源為 `LBLegalLinks`。兩個開啟入口皆接進
+  既有的外送啟動 PiP 抑制閘（見下方 `f608b9fb`）。8 張 Roborazzi baseline 因 footer 拆成獨立可點
+  擊區塊產生的次像素捨入差異已重新產生並驗證 `changed:0`。
+- **暱稱被佔用時就地顯示錯誤、不關閉 modal**（`bccfd0f8`，parity iOS `fad82c7f`）——暱稱設定 modal
+  送出改走 `setGuestNicknameVerified`，只有驗證成功才關閉；被取走或其他錯誤則以 inline 錯誤留在
+  modal 內讓使用者改名重試。`onSubmit` 簽章維持 `(String) -> Unit` 不變，既有呼叫端零改動。一併
+  修掉一個併發世代缺失（送出→取消→改點加入活動會讓舊請求對新一次呈現送出 join、關掉正在輸入的
+  modal，加 `presentationGeneration` gate 堵住）。
+- **送出中 CTA 保留品牌填色，補上四端最後一格交集態**（`6836633b`，parity iOS/Flutter/RN 既有
+  行為）——送出中若使用者中途清空輸入框，先前 Android 的 CTA 會因 `canSubmit` 轉假而退成灰色
+  disabled 面。改為填色 / 標籤色吃 `submitting || canSubmit`，互動仍鎖在 `canSubmit &&
+  !submitting`。
+- **中獎領獎 sheet 的 scrim 全 stage 吃掉點擊**（`3f7aeb3d`）——`claim` / `submitting` / `fail`
+  階段的 scrim 先前只在 `done` 階段才掛觸控攔截，其餘階段的點擊會穿透到底下播放器的靜音手勢層。
+  現在任何 stage 皆無條件吸收觸控，是否觸發 dismiss 仍只在 `done` 階段生效。
+- **分享 / 服務連結 / 外部直播卡不再誤觸發 PiP**（`f608b9fb`）——先前跳出分享 chooser、Custom
+  Tabs、或外部直播卡時，容器會誤判為「使用者離開」而自動進入 PiP。新增外送啟動抑制閘：主動啟動
+  外部 Activity 期間暫停三條 PiP 進入路徑，回前景後依「SDK 是否真的武裝過這個 Activity」的追蹤
+  結果復原，涵蓋 host Activity 在復原前被系統銷毀的情境。
+
+### Notes
+
+- **未新增 / 移除 / 改名任何既有 host-facing public 符號**、無參數型別變更、無 wire 破壞。本版
+  唯一需要 host 留意的是上方 `Changed` 小節的商品導購頁開啟方式（Android 本輪影響面小於 iOS——
+  iOS 另有客服連結出口，Android 沒有）。
+- **發佈通道**：Pages `maven-metadata.xml` 為**累加**語意——本版上線後**九版並存**
+  （3.1.3 / 3.2.0 / 3.2.1 / 3.2.2 / 4.0.0 / 4.1.0 / 4.2.0 / 4.3.0 / 4.4.0），舊版仍可解析。
+- **RN / Flutter 本輪不發**（停在待發 `2.0.0`）；本版全部主題於其主線皆已落地，隨各自 2.0.0 出貨。
+
 ## [4.3.0] - 2026-07-28
 
 > **Minor — no source-breaking change, source-compatible.** Version aligned to the iOS SDK `v4.3.0`
