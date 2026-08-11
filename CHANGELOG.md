@@ -11,6 +11,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.5.0] - 2026-08-12
+
+> **Minor — 一條 BREAKING 移除，但實務衝擊視為零（見下方 `Removed` 說明）。** 版號對齊 iOS SDK
+> `v4.5.0`（兩端 lockstep），本輪共用功能為 feature-equivalent。內部 `versionName`（`X-SDK-Version`，
+> `1.3.0`）不變。iOS 對照見 [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#450---2026-08-12)。
+
+### Removed（⚠️ BREAKING）
+
+- **⚠️ 移除 `LBWidgetResponseDTO` / `LBWidgetResponse` 的 `showGoods: Int?`**（含 data class 建構子
+  參數）。該欄位對應的 wire key `show_goods` **後端從未 emit**，因此它永遠是 `null` —— 留著等於在
+  public API 上擺一個看起來可用、實際永遠沒值的假設定。其原本標註的語意（「0=名後 / 1=影片中 /
+  2=不顯示」）源自後端 repo 一則已被該 repo 自己更正的稽核錯誤。**遷移**：wire 上真正承載「商品卡
+  顯示模式」的是新增的 `productCard`（見下方 `Added`）。讀過 `showGoods` 的 host 只可能拿到
+  `null`，改讀 `productCard` 即可；若原本就寫了 null 分支，刪掉該欄位的引用即可編譯。
+  **為什麼仍是 minor、不是 v5.0.0**：該欄位對應的 wire key 後端從未送過值，repo 內零消費端——沒有
+  任何一個真實 host 讀過非 `null` 的值。實務衝擊視為零，這是團隊已確認的判斷，非自動套用 SemVer
+  字面規則。
+
+### Added
+
+- **`LBWidgetResponse.productCard: String?`** —— `POST /sdk/widget` 回應 root 的 `product_card`
+  raw passthrough。語意為 widget 輪播卡上「商品卡」的顯示模式，後端值域 `below`（卡片下方）/
+  `inside`（卡內疊層）/ `hidden`（不顯示），後端預設 `inside`。**SDK 不解讀語意、不據此排版**。
+  缺欄位或 JSON `null` → `null`，**SDK 刻意不補後端預設 `"inside"`**，讓 UI 層能區分「後端沒送」
+  與「後端明確送 inside」。
+- **`LivebuyWidgetCore.productCard: String?`** —— 同一個值的 host 可讀唯讀狀態（`private set`），
+  比照既有 `widgetColor` / `widgetBgcolor`，於 carousel / grid 載入成功後更新。floating
+  （`/sdk/widget/live`）不帶此欄，維持 `null`。
+- **Widget 輪播卡依 `product_card` 渲染三態**（`CarouselCardView`）——`inside`（維持既有縮圖內
+  dark-glass 疊層，像素不變）/ `below`（商品卡移到縮圖外，落在**標題之下、卡片最底**；未綁商品時
+  渲染等高透明佔位維持同列同格等高）/ `hidden`（完全不畫，不留佔位）。缺值或白名單外字串一律
+  fallback 為 `inside`。
+- **Widget 表面顏色接上 `widget_color` / `widget_bgcolor`**——`CarouselView` / `ScrollableCarouselView` /
+  `VideoShopGridView` 三個 widget 表面依後台設定衍生文字與背景色：`widget_color == 2` 時文字轉
+  `#FFFFFF`（`1` 不覆寫）；`widget_bgcolor` 為合法 hex 時覆寫背景（空字串 / `null` / 缺 key 視同
+  不覆寫）。未設定時渲染與現況不變。僅套用於這三個 widget 表面，不影響全域主題。
+- **商品明細 / 快速購買 sheet 新增庫存文案開關** `LivebuyPlayerConfig.showStock`（DEFAULT
+  `true`）——`false` 時「只剩庫存 N 組」整行不畫、不留佔位，既有「售完不顯示」閘不變（AND 關係）。
+- **PlayerHeader 標題新增跑馬燈開關** `LivebuyPlayerConfig.titleScroll`（DEFAULT `true`）——是否
+  捲動仍 100% 由內容是否覆蓋容器的量測決定，`titleScroll` 是疊加在量測之上的後端能力閘（AND
+  關係），`false` 時維持既有單行省略顯示、行高不變（含直播預告 upcoming 分支）。
+- **浮動直播入口新增初始落點與延遲出現時機**（`LivebuyLiveEntryConfig`）——`position`（`null` →
+  右下，既有落點）/ `timing`（`null` → 立即，既有時機）/ `delaySeconds`（DEFAULT `3`）。`timing
+  == "delay"` 時延遲指定秒數才出現並播進場動畫；`immediate` 維持現況、零行為變動。可拖曳與不可
+  拖曳兩種模式皆適用。
+
+### Fixed
+
+- **`widget_color` 為不可解析字串或非數值型態時，不再讓整份影片清單消失。** 該欄宣告型別是 Int，
+  但後端 widget-group override 路徑是逐字賦值、沒有整數轉型。Gson 的預設 `Integer` adapter 遇
+  `"abc"` / `"2.7"` / `true` / `{}` 會在 `fromJson` 當下拋 `JsonSyntaxException`，早於
+  `WidgetResponseMapper` 執行 → 例外冒到呼叫端，**整個 widget 影片清單消失**。現改掛 field-scope
+  `LenientNullableIntDeserializer`：Int 與數字字串（`"2"`）皆正確解析，其餘一律落預設 `1` 且不
+  拋錯。**API 面零變化**（`widgetColor` 仍是 `Int`）。
+- **`sdkConfig.extensions` / `layout.player` / `layout.widget` 巢狀值正規化為純 Kotlin 型別**，
+  不再洩漏 `org.json` 內部表示（`org.json.JSONObject` → `Map`、`org.json.JSONArray` → `List`、
+  `JSONObject.NULL` → Kotlin `null`）。此前巢狀值（如後端新增的 `extensions.floating_app`）會
+  原封不動帶著 `org.json` 內部型別流到下游——RN Android bridge 因型別不是 `Map` 而序列化成 JSON
+  字串（同一份 JS 程式碼在 iOS/Android 行為不同）、`JSONObject.NULL` 不是 Kotlin `null` 導致既有
+  `filterValues { it != null }` 濾不掉、Flutter `StandardMethodCodec` 不支援 `org.json` 型別而
+  出錯。純量值（此前一直存在的情況）行為不變。**API 面零變化**（`extensions` 仍是
+  `Map<String, Any?>`）。
+- **浮動直播入口關閉鈕改對齊現行設計稿。** 舊造型抄自一個已於 2026-06-09 移除的設計元件（框外
+  24dp 深色玻璃 + 白描邊），現改為框內右上 20dp、`rgba(0,0,0,0.55)`、無描邊（對齊現行
+  `sdk-components.jsx:LBPFloatingWidget`）。卡片本身尺寸與位置不變，只有關閉鈕像素改變。
+- **In-app browser（聯絡商家 / 中獎領獎頁尾法務連結）改開在呼叫端 task。** 先前 Custom Tabs 被
+  無條件加上 `FLAG_ACTIVITY_NEW_TASK`（測試環境遺留的保底邏輯被固化進正式行為），使用者點擊後
+  落在另一個 task——recents 出現兩張卡、返回鍵回不到播放器，體感等同跳出 App。現在能解析出
+  host Activity 時不再加此 flag（同 task 開啟）；解析不到才維持加上（避免非 Activity context
+  拋 `AndroidRuntimeException`）。
+
+> **平台範圍**：iOS + Android 兩端本輪皆完整落地（parity change，見 iOS CHANGELOG）。
+> React Native / Flutter 對應能力已在主線，隨各自待發 `2.0.0` 出貨。
+
+---
+
 ## [4.4.0] - 2026-07-31
 
 > **Minor — no source-breaking change, source-compatible (one behavior BREAKING, see `Changed`).**
@@ -38,7 +114,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`tv.livebuy.sdk.core.LBURLOpenPolicy.decide(rawUrl: String)` / `LBURLOpenTarget` /
   `LBLegalLinks.TERMS_OF_USE` / `.PRIVACY_POLICY`**（`d408b23a`，parity iOS `dcea410f`）——純函式
-  URL 開啟目標裁決規則與法務連結網址事實來源，發布時尚無 production 消費者（純新增）。🔴 **一併
+  URL 開啟目標裁決規則與法務連結網址事實來源。對 host 而言是**可選用的新增 API**（不呼叫即無任何
+  行為變化）；SDK 內部的消費點隨本版一起出貨，見上方 `Changed`（view-model 層 `a15163a5`）與下方
+  `Fixed / drop-in behavior`（reference-ui 層 `fc278b0b`）。🔴 **一併
   修掉兩個真實繞過**：① `intent:` scheme 先前未過濾，`diversionUrl` 這類後端可控字串可被原樣送進
   `CustomTabsIntent`（公認可觸達任意 exported component 的向量），新策略的正面 scheme 允許清單在
   呈現之前就擋下它；② API ≤ 26（`minSdk` 是 24，實際出貨環境）`android.net.Uri` 以 authority 內
