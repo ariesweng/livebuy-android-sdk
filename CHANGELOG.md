@@ -11,6 +11,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.6.0] - 2026-08-12
+
+> **Minor.** 兩項 reference-ui 新增設定面，皆 additive，無移除、無破壞性變更。版號對齊 iOS SDK
+> `v4.6.0`（兩端 lockstep），本輪共用功能為 feature-equivalent。內部 `versionName`
+> （`X-SDK-Version`，`1.3.0`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#460---2026-08-12)。
+
+### Added
+
+- **`LivebuyPlayerConfig` 新增 `position: String?` 欄位**（DEFAULT `null` → 右下角，即既有
+  落點）。`CollapsibleLivebuyPlayer` 縮小後出現的懸浮預覽卡先前恆固定右下角，現在依此欄位比照
+  「現正直播」入口（`LivebuyLiveEntryConfig.position`）換邊——複用同一套
+  `LBFloatingEntryPosition.normalized()` 正規化邏輯（`LivebuyLiveEntry.kt`），懸浮卡靜止對齊 /
+  padding / 拖曳夾限三處共用同一次解析結果。未注入時渲染與現況逐位元組相同（既有
+  Roborazzi baseline 零變動）。
+- **`CarouselView`（輪播 widget）根 `Column` 補畫 `widget_bgcolor` 衍生後的背景色**，比照既有
+  `VideoShopGridView` 語意：合法 hex 覆寫背景；缺值 / 空字串 / 不可解析維持既有背景值不變，不
+  引入新預設色。`widget_color`（文字色反轉）與背景色可同時獨立生效。`ScrollableCarouselView`
+  （獨立的 turnkey 捲動變體）維持不繪製背景的現狀，不在本項範圍內。
+  > 測試環境備註：Roborazzi 的 composable-only capture（無 host Activity）下，`CarouselView`
+  > 未設定背景時先前渲染為完全透明像素；補畫後即使未設定 `widget_bgcolor`，該區域也會變成
+  > 不透明的既有背景色（色值不變，只有 alpha 從 0 變 255）——這只影響測試快照，不影響真實 App
+  > 內的實際顯示效果（真實 App 的輪播容器本來就疊在有背景色的頁面之上）。4 個既有 Roborazzi
+  > baseline 因此重新錄製，非行為 regression。
+
 ## [4.5.0] - 2026-08-12
 
 > **Minor — 一條 BREAKING 移除，但實務衝擊視為零（見下方 `Removed` 說明）。** 版號對齊 iOS SDK
