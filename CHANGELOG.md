@@ -11,6 +11,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.6.1] - 2026-08-13
+
+> **Patch.** 補齊一個既有背景繪製語意的缺口，無新增符號、無破壞性變更。版號對齊 iOS SDK
+> `v4.6.1`（兩端 lockstep），本輪共用功能為 feature-equivalent。內部 `versionName`
+> （`X-SDK-Version`，`1.3.0`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#461---2026-08-13)。
+
+### Fixed
+
+- **`ScrollableCarouselView`（`CarouselView.kt` 同檔內獨立 composable，`MinimalDesign.WidgetCarousel`
+  使用的 turnkey 全量水平捲動變體，`LivebuyWidget` drop-in 容器實際渲染的表面）根 `Column` 補畫
+  `widget_bgcolor` 衍生後的背景色**，比照既有「窗口式」`CarouselView`（`WidgetOverlayView`
+  CAROUSEL 分支使用的表面）與 `VideoShopGridView` 語意：合法 hex 覆寫背景；缺值 / 空字串 /
+  `null` 維持既有背景值不變，不引入新預設色。`widget_color`（文字色反轉）與背景色可同時獨立
+  生效。這是 v4.6.0 讓「窗口式」`CarouselView` 補畫背景時明確排除、並寫進 spec 當作正式
+  Requirement 排除條款的缺口（`ScrollableCarouselView` 維持不繪製背景的現狀）——本版推翻該
+  排除，drop-in 容器實際渲染的輪播 widget 才真正會顯示商家設定的背景色。
+  > 測試環境備註：Roborazzi 的 composable-only capture（無 host Activity）下，
+  > `ScrollableCarouselView` 未設定背景時先前渲染為完全透明像素；補畫後即使未設定
+  > `widget_bgcolor`，該區域也會變成不透明的既有背景色（色值不變，只有 alpha 從 0 變 255）——
+  > 這只影響測試快照，不影響真實 App 內的實際顯示效果。2 個既有 Roborazzi baseline 因此重新
+  > 錄製，非行為 regression；另有一個既有色彩反轉 golden（`widget-embed-inverted-scrollable-carousel.png`）
+  > 因新背景繪製需要程式碼修正（顯式提供匹配的 `widgetBgcolor`），非單純重錄。
+
 ## [4.6.0] - 2026-08-12
 
 > **Minor.** 兩項 reference-ui 新增設定面，皆 additive，無移除、無破壞性變更。版號對齊 iOS SDK
