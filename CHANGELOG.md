@@ -11,6 +11,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.7.0] - 2026-08-25
+
+> **Minor.** 新增 3 項 host-facing 能力——商品明細/加購 sheet 的 Sale 促銷徽章、`LBProduct` 補上
+> `videoId` 欄位、商品明細新增「商品介紹」區塊＋「更多商品」2×2 推薦格；另把底部 sheet 的拖曳
+> 調高與拖曳收合手勢整併為單一連續手勢並擴大到全部 5 個 sheet。版號對齊 iOS SDK `v4.7.0`（兩端
+> lockstep）。內部 `versionName`（`X-SDK-Version`，`1.3.0`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#470---2026-08-25)。
+
+### Added
+
+- **商品明細 / 加購 sheet 新增 Sale 促銷徽章**：商品有原價（劃線價）且未售完時，商品圖 / 96×96
+  縮圖旁顯示一個「Sale」徽章 chip（accent 底色、白字，`SaleBadge` composable）；純 reference-ui
+  視覺渲染，不需任何新的資料欄位或 view-model 改動，售完或無原價時不顯示。
+- **`LBProduct` 新增 `videoId` 欄位（`String?`）**：承載 `LBChannel.otherGoods[]` 每筆商品所屬的
+  影片 id（一般 `goods[]` 內項目此欄位為 `null`），Gson 預設容錯（缺鍵/null → `null`）。補齊
+  `component-contracts` 規格先前已要求、但四端從未真正實作的缺口，是下方「更多商品」推薦格能夠
+  換片的必要資料來源。
+- **商品明細新增「商品介紹」文字區 ＋「更多商品」2×2 推薦格**：`DETAIL` 呈現底部新增商品介紹
+  說明文字（後端 `description` 欄位就緒前，先以固定文案佔位）與最多 4 筆「更多商品」推薦卡片
+  （資料源 `LBChannel.otherGoods`，過濾掉目前商品）。點推薦卡的播放圖示會直接換到該商品所屬
+  影片（沿用既有容器層換片機制，比照 EndScreen 熱門推薦的既有模式，不新增換片入口）；點卡片
+  本體或加購鈕會切換到該商品自己的明細/加購畫面——同一個 sheet 換內容＋本地返回路徑（Compose
+  `Box` 疊層比照既有 zoom overlay 寫法，非疊出第二個 sheet 實例），header 關閉鈕在有返回路徑時
+  變成「返回」；從推薦卡加購會帶該商品自己的 `videoId`，確保購物車去重鍵 `(goodsId, videoId)`
+  正確。商品卡新增 `hideSub`/`onPlayClick` 兩個渲染參數，grid 呈現的播放鈕改為右上角呼吸動畫
+  圓鈕＋獨立加購圓鈕，既有 row 呈現的播放提示改為「看講解」文字膠囊（既有 `RowCartButton` 不
+  動）。
+- **Roborazzi baseline 新增/重錄**：Sale 徽章新增後，既有帶原價未售完的 in-stock snapshot（含
+  `ProductDetailSheetSnapshotTest` / `AddToCartSheetSnapshotTest`）已重新錄製；新增反例（無原價 /
+  售完不顯示）baseline。
+
+### Changed
+
+- **底部 sheet 拖曳調高與拖曳收合整併為單一連續手勢，並擴大到全部 5 個 bottom sheet**：先前僅
+  商品明細 / 加購 / 補貨通知三張 sheet 可選擇性拖曳調高（`resizable = true` opt-in，下限寫死
+  25%），本版起商品列表抽屜（`ProductListSheet`）與影片資訊面板（`VideoInfoPanel`）也一併具備
+  拖曳調高能力；往上拖調高、往下拖收合合併成同一條手勢——高度下限改為「該次呈現實際渲染出的
+  高度」而非寫死值，超出下限才轉為既有的拖曳收合位移（沿用既有 100dp 累積位移門檻與彈回/滑出
+  動畫，門檻本身不變）。**商品明細（`DETAIL`）呈現的預設高度上限由 v4.6.2 的 90% 改回 50%
+  （內容自適應）**——90% 現在只在使用者主動拖曳到頂時才出現，不再是開啟就逼近全螢幕的預設值；
+  如果你的 host 依賴 v4.6.2「明細一開啟就是 90%」的行為，這個預設值本版已改變。`ADD_TO_CART`
+  與補貨通知既有固定 40% 高度不受影響。
+
 ## [4.6.2] - 2026-08-24
 
 > **Patch.** 觀看人數進場假 0 修復 + 一批 reference-ui 視覺/互動細節收斂，無新增符號、無破壞性
