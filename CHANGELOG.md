@@ -11,6 +11,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.8.0] - 2026-08-25
+
+> **Minor.** 延續 v4.7.0 剛上線的「更多商品」推薦格，本輪多項精進＋新增商品選項可購性計算＋
+> icon 對齊新版設計稿。有 2 項 package-internal BREAKING（非 public API 簽章變更，見下方
+> Changed）：推薦格導覽簡化（移除巢狀 breadcrumb 返回）；iOS-only 拖曳手勢局部回退（不影響
+> Android）。版號對齊 iOS SDK `v4.8.0`（兩端 lockstep）。內部 `versionName`
+> （`X-SDK-Version`，`1.3.0`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#480---2026-08-25)。
+
+### Added
+
+- **商品選項不可購性計算＋disabled 攔截**：多層規格選項（如顏色×尺寸）改用精確比對取代先前的
+  子字串搜尋，不可購組合顯示 disabled 灰階並攔截點擊。
+- **`LBProduct` 新增 `description` 欄位（`String?`）**：承載商品真實介紹文字，Gson 預設容錯
+  （缺鍵/null → `null`）。
+- **「更多商品」推薦格新增原價劃線顯示**：推薦卡片新增原價欄位透傳與劃線渲染，並修正呼叫端
+  `hideSub` 判斷邏輯缺口（劃線資料已透傳但呼叫端先前沒有正確依「原價是否非空」決定是否顯示），
+  修正後原價劃線功能才真正生效。
+- **icon 對齊新版設計稿**：8 個 composable 改寫/新增對齊 `icons.jsx` 新版設計來源，30 張
+  Roborazzi baseline 重生。純視覺，不影響互動行為。
+- **商品袋 row 播放提示改為「看講解」白底膠囊**：對齊設計稿 R21，tap handler 邏輯不變。
+
+### Changed
+
+- **⚠️ 「更多商品」推薦格導覽簡化（BREAKING，reference-ui 內部行為，非 public API）**：移除
+  v4.7.0 引入的 breadcrumb 逐層返回機制，header 關閉鈕永遠是「✕ 全部關閉」；播放圖示換片後
+  額外呼叫既有的 `closeDetail()`，整個商品 sheet stack 隨換片一併關閉（v4.7.0 是「换片不連動
+  dismiss」）。如果你的 host 依賴 v4.7.0「推薦格巢狀返回」行為，本版已改變。
+- **「更多商品」推薦格上限 4 → 12**。
+- **換片時一併關閉外層商品袋/清單抽屜**：先前換片後外層抽屜若已開啟會維持開著，本版起一併關閉。
+- **商品介紹文字區改顯示真實資料**：v4.7.0 上線時固定顯示佔位文案，本版接上真實
+  `LBProduct.description`；**沒有真實介紹文字時整個區塊（含標題）都不顯示**，不再顯示佔位文案
+  （比照既有 `brief` 欄位「空字串不畫」規則對齊）。
+- **更多商品卡片版面調整**：原價移到售價下方、加購鈕貼齊卡片底部；grid 卡片移除邊框。
+- **商品明細 sheet 底部灰色間隔修正**：捲到底時原本會露出外層灰色背景的間隔，本版移入白卡內側，
+  捲到底不再露灰。
+- **iOS-only 拖曳手勢局部回退**（不影響 Android）：iOS 端把 v4.7.0 整併的拖曳調高/收合單一
+  連續手勢局部撤回為各自獨立判斷；Android 維持 v4.7.0 的整併手勢不變。
+
+### Fixed
+
+- **推薦資料源改從容器持久快取退回提供**：修正特定邊界情況（容器快取命中但欄位為空）下漏抓
+  推薦資料的問題；純技術韌性修正，行為對使用者不可見。
+
 ## [4.7.0] - 2026-08-25
 
 > **Minor.** 新增 3 項 host-facing 能力——商品明細/加購 sheet 的 Sale 促銷徽章、`LBProduct` 補上
