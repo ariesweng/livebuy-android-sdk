@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.9.1] - 2026-08-27
+
+> **Patch.** 延續 v4.9.0，本輪為純 bug fix（1 項 Android-only 視覺修復），無新增公開欄位、
+> 無行為預設值改變、無 API 簽章變更。版號對齊 iOS SDK `v4.9.1`（兩端 lockstep）。內部
+> `versionName`（`X-SDK-Version`，`1.3.0`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#491---2026-08-27)。
+
+### Fixed
+
+- **聊天氣泡文字緊縮下沉到 composable 自身**：`ChatLine` / `EventJoinLine` / `ActivityLine`
+  各自在自身內套用等效於 `ProvideTightText` 的緊縮文字度量（`includeFontPadding=false` +
+  `LineHeightStyle`），不再依賴呼叫端外層 wrap；解決 QA harness / `@Preview` / 既有 Roborazzi
+  測試直接掛載時視覺比 iOS 厚的問題。`Modifier.padding` 數值本身不變。
+
 ## [4.9.0] - 2026-08-27
 
 > **Minor.** 延續 v4.8.0，本輪新增訂閱/收藏顯示開關（新公開設定欄位）＋底部 sheet 拖曳一系列
