@@ -11,6 +11,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.9.0] - 2026-08-27
+
+> **Minor.** 延續 v4.8.0，本輪新增訂閱/收藏顯示開關（新公開設定欄位）＋底部 sheet 拖曳一系列
+> 穩定化修復（上限收斂 90%→80%、多個手勢邊界 bug）＋一批視覺對齊設計稿與 Android-only parity
+> 追平。有 1 項 BREAKING（host-facing 預設行為改變，見下方 Changed）。版號對齊 iOS SDK
+> `v4.9.0`（兩端 lockstep）。內部 `versionName`（`X-SDK-Version`，`1.3.0`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#490---2026-08-27)。
+
+### Added
+
+- **訂閱/收藏顯示開關**：Composable 層新增兩個 optional 參數，控制訂閱徽章/pill（同一旗標）與
+  收藏鈕是否顯示，預設 **`false`**（隱藏）。
+- **商品袋 icon 放大對齊 70% 比例**：主要商品袋按鈕與直播/回放底部 bar 商品袋 icon，兩個獨立
+  渲染點皆已放大。純視覺，不影響互動行為。
+- **一般觀眾留言加全形冒號分隔**：暱稱與訊息內容間新增冒號，對齊設計稿更新；9 張 Roborazzi
+  baseline 重生。
+
+### Changed
+
+- **⚠️ 訂閱/收藏預設隱藏（BREAKING）**：既有 host 若未設定顯示開關，升級後訂閱徽章/pill、收藏鈕
+  會從顯示變為隱藏。不影響任何 public API 簽章，既有呼叫碼零改動即可編譯運行；如需保留這些元素，
+  顯式傳入 `true`。
+- **底部 sheet 拖曳觸發區域觸控目標調整**：把手列高 16dp → 44dp → 32dp（兩輪迭代，內部視覺 pill
+  尺寸不變，只調外層觸控熱區）。
+- **底部 sheet 拖曳調高上限收斂 90% → 80%**：全部 5 個 sheet 共用同一個值，計算架構不變。
+- **懸浮 widget 移除影片標題**：對齊設計稿無標題元素的版面。
+- **Sale 徽章內部上下間距收緊**：對齊設計稿。
+
+### Fixed
+
+- **底部 sheet 拖曳三項邊界修復（真機驗證）**：Scrim 搶走把手拖曳觸控、卡片跟手位移不準確、
+  調高後無法再調低，三項一併修正。
+- **底部 sheet 調高後關不掉**：dismiss 門檻改為相對「調高過程曾到達過的峰值高度」計算，每個新
+  手勢重新起算 floor（獨立模擬驗證 500dp→100dp 情境）。
+- **商品明細巢狀推薦格恆顯示**：追平 iOS/RN/Flutter 既有行為（先前 Android 這條路徑會在特定
+  情況下不顯示）。
+- **點播間說明頁聯絡客服 icon**：換成新版 `ContactGlyph`，追平 iOS。
+- **聊天室觀眾留言氣泡**：補回黑 0.42 透明度圓角氣泡底（先前遺失）；垂直 padding 5dp→3dp 對齊
+  iOS。
+
 ## [4.8.0] - 2026-08-25
 
 > **Minor.** 延續 v4.7.0 剛上線的「更多商品」推薦格，本輪多項精進＋新增商品選項可購性計算＋
