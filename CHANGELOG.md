@@ -11,6 +11,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.11.0] - 2026-09-01
+
+> **Minor.** 延續 v4.10.0，本輪 Android 新增多項能力：播放器手勢重寫（乾淨模式）、直播抽獎活動
+> 入口、VOD/回放播放進度條（Android **首次**）、雙擊送愛心（LIVE + 回放）、字幕 CC 開箱顯示、
+> 中獎領獎分頁，另加 3 項 Android-only 視覺/缺陷修復。含 **1 項 ⚠️ BREAKING**
+> （`WinClaimStage.CONFIRM_CLOSE` 移除，reference-ui-internal 範圍）——比照 v4.5.0/v4.8.0/
+> v4.9.0 先例，含 BREAKING 但整輪仍判定 minor。版號對齊 iOS SDK `v4.11.0`（兩端 lockstep）。
+> 內部 `versionName`（`X-SDK-Version`，`1.3.0`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#4110---2026-09-01)。
+
+### Added
+
+- **播放器手勢重寫：乾淨模式** — 單擊行為依直播/VOD 分流；長按改為切換「乾淨模式」（隱藏頂欄/
+  底部 bar/聊天等疊層），取代舊版「按住暫停」手勢。
+- **直播抽獎活動入口按鈕與彈窗** — 綁定既有 `currentActivity` 綁定狀態，首次補上 UI 呈現。
+- **VOD / 直播回放播放進度條（Android 首次）** — 補滿 core 1Hz 進度 pump + 控制轉發，reference-ui
+  綁上播放進度條；拖曳時聊天室往上推、不是整段隱藏。
+- **LIVE 進行中雙擊送愛心，擴大到已結束直播回放** — 兩個獨立 change：LIVE 進行中首次落地，同批
+  次擴大到回放（parity 既有 LIVE 行為）。
+- **字幕 CC 開箱即顯示 VTT 內容** — 同批修復側欄 CC 死按鈕（先前完全不會渲染，rail enablement
+  餵值鏈斷裂）。
+- **中獎領獎 modal 新增分頁** — 多筆中獎紀錄可翻頁瀏覽；同批活動/中獎入口堆疊順序反轉（活動入口
+  改佔主槽，中獎入口讓位）。
+
+### Changed
+
+- **⚠️ BREAKING — 中獎領獎 modal 關閉機制簡化**：`WinClaimStage.CONFIRM_CLOSE` /
+  `WinClaimPhase.CONFIRM_CLOSE` 移除，連同 ✕ 關閉鈕與「關閉視窗」二次確認文字鈕；modal 現在
+  **只能透過 scrim（背景遮罩點擊）關閉**。**受影響對象**：直接窮舉 `WinClaimStage` enum 的
+  host；走 turnkey 容器或不窮舉內部狀態列舉的 host 不受影響。（本輪訂正：原 archived proposal
+  未使用「BREAKING」字樣標註此移除，實際行為與 iOS 一致，本輪 CHANGELOG 統一標註。）
+- **中獎入口按鈕改款**：圓形 → 方形，拿掉脈動動畫與數字徽章。
+
+### Fixed
+
+- **LIVE 底部 bar 內容距底 16dp**：拿掉多餘外層 margin，內容真正貼齊底部。
+- **頂欄與 LIVE 底部 bar 拿掉裝飾性漸層**。
+- **播放進度條細線真正貼底**。
+- **拖曳進度條中聊天室要往上推、不是整段隱藏修復**（`git show b2cd10df` 可核對——因與並行手勢
+  重寫改動糾纏，經協調合併帶走，沒有獨立 openspec change 文件可引用，特此誠實記錄）。
+- **愛心 icon 視覺填滿度對齊 iOS SF Symbol 觀感**。
+- **LIVE 介紹中商品卡分頁點改靠右對齊**。
+- **直播多商品同時介紹漏標 badge 修復**。
+- **拖曳進度條中失焦（含觸發系統 PiP）後讀數卡住修復**：失焦視同放開手指，回前景後讀數不再
+  卡住。
+
 ## [4.10.0] - 2026-08-28
 
 > **Minor.** 延續 v4.9.1，本輪 3 項 Android reference-ui 視覺修復（純套件內部修正）+ 2 項本 repo
