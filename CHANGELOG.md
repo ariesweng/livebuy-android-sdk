@@ -11,6 +11,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.12.0] - 2026-09-02
+
+> **Minor.** 延續 v4.11.0，本輪 Android 新增：現正直播「前往直播」提示鈕（VOD/回放偵測到同頻道
+> 現正直播時顯示）、VOD 正在介紹中商品訊號（core）、活動入口 modal 曝露完整進行中活動清單+分頁
+> 狀態＋分頁點/滑動切換（template＋reference-ui 兩層皆補齊，Android 本輪走完整條線），另加 4 項
+> 視覺/缺陷修復。**無 BREAKING**（`grep -rli -i BREAKING` 掃過本輪所有相關 archived 目錄命中 22
+> 個檔案，逐一核實皆為否定敘述或對 v4.11.0 既有 BREAKING 項的引用，無真實命中）。版號對齊 iOS SDK
+> `v4.12.0`（兩端 lockstep）。內部 `versionName`（`X-SDK-Version`，`1.3.0`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#4120---2026-09-02)。
+
+### Added
+
+- **現正直播「前往直播」提示鈕** — 觀看 VOD / 已結束直播回放時，若偵測到同一頻道現正直播中，顯示
+  提示鈕引導前往直播。
+- **VOD 正在介紹中商品訊號（core）** — `LivebuyPlayerView` 新增 VOD 播放進度對應的「正在介紹中
+  商品」訊號，parity 既有 LIVE 行為。
+- **活動入口 modal 多活動分頁點＋滑動切換（template＋reference-ui）** — `DefaultPlayerTemplate`
+  反轉舊版「只取第一筆活動」決策，曝露完整清單與分頁索引；`ActivitySheet` 補上分頁點與滑動切換
+  UI，`currentActivity` 語意等價替換（既有純讀取呼叫端可編譯通過，無 breaking）。**Android 本輪
+  template＋reference-ui 兩層皆走完整條線**（不同於 iOS 本輪僅完成 template 層，reference-ui
+  分頁視覺待後續）。
+- **活動入口切換影片立即隱藏＋換片還原快取（template 層）** — 換片時活動入口立即隱藏，換回原片時
+  從快取還原顯示狀態。
+
+### Fixed
+
+- **直播雙擊送愛心改延遲 commit 靜音＋可取消**，不再誤觸靜音閃爍。
+- **OBS 斷播時直播中暫停鍵不再誤顯示**，回放/VOD 不受影響。
+- **活動入口 modal 加入成功後自動關閉**，被閘攔截時維持開啟。
+- **領獎 modal 頂部禮物徽章換成白底圓＋`WinTrophyGlyph` 對齊設計稿**。
+
+### 排除範圍（本輪盤點確認，非缺漏）
+
+- **`android/sample` 換片後輪播回原影片沒反應的修復**（commit `1851921d`）**不進本 CHANGELOG**——
+  該修復僅觸碰 demo host app（`android/sample/`），不影響 `:livebuy` / `:livebuy-ui` /
+  `:livebuy-reference-ui` 三個發佈模組，本輪 AAR 產物不含此檔案。
+
 ## [4.11.0] - 2026-09-01
 
 > **Minor.** 延續 v4.10.0，本輪 Android 新增多項能力：播放器手勢重寫（乾淨模式）、直播抽獎活動
