@@ -11,6 +11,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.13.0] - 2026-09-02
+
+> **Minor.** 延續 v4.12.0，本輪 Android 主打**播放器手勢三度改版（R29）**：短擊切換「乾淨
+> 模式」、雙擊送愛心整段退役（改為 VOD/回放雙擊 seek ±10 秒）、長按 VOD/回放近似 2 倍速快轉、
+> 中央暫停覆蓋層移除、商品袋按鈕縮小、頂列新增靜音鈕。含 **1 項 ⚠️ BREAKING**（reference-ui
+> 內部行為契約——手勢觸發語意整個對調，取代 R23 舊模型）——比照 v4.5.0/v4.8.0/v4.9.0/v4.11.0
+> 先例，含 BREAKING 但整輪仍判定 minor。**本輪零 core / 零 livebuy-ui（template）層觸碰，對
+> Tier 0 host 讀者零行為變化**。版號對齊 iOS SDK `v4.13.0`（兩端 lockstep）。內部
+> `versionName`（`X-SDK-Version`，`1.3.0`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#4130---2026-09-02)。
+
+### Added
+
+- **播放器手勢三度改版（R29）新增**：`cleanMode` 期間 `PlayerHeaderBar` 新增靜音切換鈕；新增
+  「退出乾淨模式」小圓鈕。
+- **已結束直播回放雙擊送愛心改延遲 commit 播放/暫停切換**（R29 之前的迭代，同輪一併收工）。
+- **縮小按鈕 icon 放大 18dp → 20dp**，對齊設計稿。
+
+### Changed
+
+- **⚠️ BREAKING — 播放器手勢觸發語意整個對調**：取代 R23 定的「長按=乾淨模式、單擊=靜音/
+  播放暫停」：短擊（不分直播進行中/預告/VOD/回放）切換 `cleanMode`；雙擊（僅 VOD/回放）依左右
+  半螢幕 seek ±10 秒；長按（僅 VOD/回放）近似 2 倍速快轉。直播進行中/預告倒數不支援雙擊/長按。
+- **移除**：中央暫停覆蓋層不再被組合；VOD/回放播放/暫停改由播放進度條展開態上的小按鈕操作。
+- **商品袋按鈕縮小**，對齊設計稿。
+
+### Fixed
+
+- **切換影片/緩衝中中央暫停覆蓋層誤顯示修復**（R29 之前的迭代）。
+- **縮小後輪播點回同一支影片無反應修復**——`CollapsibleLivebuyPlayer` open-signal 重開判定
+  缺口（同批附帶 `android/sample/` demo host wiring 更新）。
+- **現正直播提示鈕漏排除直播進行中場景修復**＋觸控範圍擴大至 48dp＋對齊設計稿縮小尺寸。
+
 ## [4.12.0] - 2026-09-02
 
 > **Minor.** 延續 v4.11.0，本輪 Android 新增：現正直播「前往直播」提示鈕（VOD/回放偵測到同頻道
