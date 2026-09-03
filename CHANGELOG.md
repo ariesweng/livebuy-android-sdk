@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.13.1] - 2026-09-03
+
+> **Patch.** 同上 iOS 對應段落（見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#4131---2026-09-03)）——補齊
+> v4.13.0（R29）design.md 當時刻意記錄的 Non-Goals 延後項：乾淨模式退出鈕像素對齊設計稿。
+> **純 reference-ui 視覺修正，零 core / 零 livebuy-ui（template）層觸碰**。**iOS + Android
+> 兩端 lockstep**。
+
+### Fixed
+
+- 乾淨模式退出鈕位置改依 LIVE / VOD-回放分流對齊設計稿：`start` 由 `12dp` 修正為 `14dp`，
+  `bottom` 由固定 `72dp` 改為 `16dp`（LIVE）／`52dp`（VOD/回放）。icon（`DetailGlyph`）本已
+  對齊設計稿，本次未改動。
+
 ## [4.13.0] - 2026-09-02
 
 > **Minor.** 延續 v4.12.0，本輪 Android 主打**播放器手勢三度改版（R29）**：短擊切換「乾淨
