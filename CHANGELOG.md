@@ -11,6 +11,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.15.0] - 2026-09-07
+
+> **Minor.** 同 iOS，自 `4.14.0` 以來累積 67 個 commit（Android 9 個）。**含 1 項 ⚠️
+> BREAKING**（reference-ui-internal 視覺行為，同 iOS）。版號對齊 iOS SDK `v4.15.0`（兩端
+> lockstep）。內部 `versionName`（`X-SDK-Version`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#4150---2026-09-07)。完整
+> 敘述見 [`docs/release-notes/v4.15.0.md`](../docs/release-notes/v4.15.0.md)。
+
+### Added
+
+- **`VIDEO_OPEN` 事件新增 `prev_video_id` / `next_video_id`**（core）——同 iOS。
+
+### Changed
+
+- **⚠️ BREAKING — 售完商品不再排除「介紹中」效果**：同 iOS 行為（本端 change 自身文件未標記
+  BREAKING，但視覺結果與 iOS 完全一致，為文件一致性本輪一併列入）。
+
+### Fixed
+
+- **`PiPHelper.enterPiP` 崩潰防護**（core）：修復 host-fed 連結開啟（如「聯絡商家」）與
+  auto-PiP 非同步觸發 race 導致的未捕捉 `IllegalStateException` 崩潰，改記錄
+  `auto_pip_fallback` 指標並回傳 `false`。
+- **LIVE 釘選卡售完商品顯示「已售完」**。
+- **直播回放從未介紹過的商品縮圖點擊改為完全 no-op**。
+- **直播回放從未介紹過的商品不顯示看講解/介紹中 UI**。
+- **商品列表縮圖覆蓋層模式改讀 `isFinishedLiveReplay`**。
+- **VOD 商品列表縮圖撤回「已結束」第三態**，同 iOS。
+- **VOD 商品列表 sheet 置頂邏輯排除純 VOD**，同 iOS。
+
 ## [4.14.0] - 2026-09-07
 
 > **Minor.** 本輪規模遠大於任何一輪先例（221 個 commit，v4.13.0 只有 25 個），主軸是「四端
