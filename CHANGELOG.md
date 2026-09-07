@@ -11,6 +11,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.14.0] - 2026-09-07
+
+> **Minor.** 本輪規模遠大於任何一輪先例（221 個 commit，v4.13.0 只有 25 個），主軸是「四端
+> 100% 像素 parity」政策的補課批次。**含 3 項 ⚠️ BREAKING**（1 項 core 行為面 + 2 項
+> reference-ui-internal）——比照 v4.5.0/v4.8.0/v4.9.0/v4.11.0/v4.13.0 先例，含 BREAKING 但
+> 整輪仍判定 minor。**本輪對 core/template 層有實質觸碰**（與 v4.13.0「零 core」不同）。版號
+> 對齊 iOS SDK `v4.14.0`（兩端 lockstep）。內部 `versionName`（`X-SDK-Version`）不變。iOS 對照
+> 見 [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#4140---2026-09-07)。
+> 完整敘述見 [`docs/release-notes/v4.14.0.md`](../docs/release-notes/v4.14.0.md)。
+
+### Added
+
+- **直播回放版型統一**（`isFinishedLiveReplay`）——同 iOS。
+- **四輪 design 改版**：R30/R32/R33/R34/R35/R36——同 iOS 對應項目。
+- **直播入口卡新增關閉播放器後 2 秒緩衝**。
+- **`enableDirectCloseButton` 全域預設設定**（新增可選參數本身為 Added；預設值翻轉見下方
+  Changed）。
+- **VOD 商品列表 sheet 回放/VOD 時介紹中商品也置頂到最前**（template 層）。
+
+### Changed
+
+- **⚠️ BREAKING — `enableDirectCloseButton` 全域預設值 `false → true`**：同 iOS，行為面
+  BREAKING、非源碼面。
+- **⚠️ BREAKING — VOD/回放輪播卡「▶ 時長」徽章移除**：design R33 明確拍板。同輪商品卡改白卡
+  配色。
+- **⚠️ BREAKING — MiniCart「介紹中」tag 機制移除**：`MiniCartPeek.kt` 移除
+  `tag: String? = null` Composable 參數（`EqualizerGlyph` + accent 文字渲染區塊一併移除），
+  對齊設計稿。
+- **VOD 側欄浮動購物袋 icon 比例校正回 ~70%**。
+- **collapsible 縮小懸浮播放器修復**：close 不再搶先重置 `isMinimized` 導致關閉後又跳全螢幕；
+  in-place 換片同步 `onVideoChanged`。
+- **icon 向量化**：CC icon 對齊設計稿、更多 sheet 分享 icon 改實心版。
+
+### Fixed
+
+- **開場影片播放期間 template 層抑制商品卡顯示**。
+- **抽獎活動彈窗 CTA 移除已參加鎖定改可重複點擊**。
+- **放大鏡 `overridePhotoURL` 空字串語意對齊 iOS/RN/Flutter**。
+- **加購失敗回滾 dedupe 窗口 parity**（`android-cart-dedupe-rollback-parity-core`）。
+- **開場影片結束/手動略過時補發 moment snapshot 防禦性修正**（`android-intro-end-momentstate-
+  publish-core`，parity iOS；程式碼實際由 commit `759e8360` 帶走，內容經核實無損，詳見
+  `v4-14-0-release-readiness/design.md` Decision 4）。
+- **已結束活動與 winentry 隨每輪 `POLL_RECEIVED` 正確消失**。
+- **聊天室主播名牌冒號間距修正**。
+- **「更多」sheet 被聊天室擋住修正**。
+- **公告橫幅配色/避讓區多輪修正**。
+
 ## [4.13.1] - 2026-09-03
 
 > **Patch.** 同上 iOS 對應段落（見
