@@ -11,6 +11,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.17.0] - 2026-09-10
+
+> **Minor.** 同 iOS，自 `4.16.0` 以來累積 69 個 commit（Android 11 個獨立行為，另 2 個支援性
+> baseline 重生 commit、1 個純 regression test（無生產程式碼變動）、1 個 Example demo app
+> 修復不計入本檔）。**本輪唯一 BREAKING 僅影響 iOS，Android 不受影響**——本端無任何 API
+> 簽章或預設行為變更。版號對齊 iOS SDK `v4.17.0`（兩端 lockstep）。內部 `versionName`
+> （`X-SDK-Version`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#4170---2026-09-10)。完整
+> 敘述見 [`docs/release-notes/v4.17.0.md`](../docs/release-notes/v4.17.0.md)。
+
+### Added
+
+- **聊天室加入活動列改顯示訊息自帶主播名**（template + reference-ui）——同 iOS。
+- **CC 字幕 icon 啟用時改 active 填色態**（reference-ui）——同 iOS。
+- **直播模式點商品縮圖跳過關閉商品列表抽屜**（reference-ui）——同 iOS。
+- **商品照片載入體驗優化**（reference-ui）——同 iOS。
+
+### Changed
+
+- **聊天室「最新訊息」pill 改白底 accent 字，並改水平置中**（reference-ui）：色源角色互換同
+  iOS；本輪額外把對齊由貼右下角改為水平置中貼底，追平 iOS 既有版位。
+- **EndScreen 直播結束畫面重新設計**——同 iOS（design R41）。
+- **直播公告橫幅圖示改為自訂 bullhorn 向量路徑**——同 iOS。
+
+### Fixed
+
+- **換片時補齊 `variantPicker` 重置**（template）：五個商品明細 sheet-stack view-model 中，
+  只有 `variantPicker` 換片時未被清空（其餘四個 Android 既有已涵蓋），本輪補上並追平
+  iOS/RN/Flutter。
+- **商品明細切換「更多商品」推薦商品時，捲動位置重置回最上方**——同 iOS。
+- **已結束直播回放改用嚴格 `isLive` 排除，讓真正 VTT/CC 字幕可顯示**——同 iOS。
+- **觀眾留言及非主播角色列暱稱冒號改回白色，不再誤套暱稱粉色**——同 iOS。
+
+> 註：新增一支 Robolectric 回歸測試驗證 `PollManager` 對「換片時飛行中的過期 poll 回應」
+> 本來就有結構性防護（與 iOS 這輪才修的 race 不同結論）。純測試新增，無生產程式碼變動，不
+> 計入上方 Fixed。
+
 ## [4.16.0] - 2026-09-09
 
 > **Minor.** 同 iOS，自 `4.15.0` 以來累積 109 個 commit（Android 17 個獨立行為）。**含 1 項
