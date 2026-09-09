@@ -11,6 +11,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.16.0] - 2026-09-09
+
+> **Minor.** 同 iOS，自 `4.15.0` 以來累積 109 個 commit（Android 17 個獨立行為）。**含 1 項
+> ⚠️ BREAKING**（reference-ui-internal 視覺行為，本端 change 文件已自標，iOS 為文件一致性
+> 同列）。版號對齊 iOS SDK `v4.16.0`（兩端 lockstep）。內部 `versionName`（`X-SDK-Version`）
+> 不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#4160---2026-09-09)。完整
+> 敘述見 [`docs/release-notes/v4.16.0.md`](../docs/release-notes/v4.16.0.md)。
+
+### Added
+
+- **`LBChannel.isFlashSale`**（core，additive）——同 iOS。
+- **`DefaultPlayerHeaderState.isFlashSale`**（template）——同 iOS。
+- **商品名稱標籤系統落地**（design R39）——同 iOS，含「搶購中」LIVE 分支真實資料接線。
+- **浮動小卡新增 `inset` host 覆寫參數**——同 iOS。
+- **`CollapsibleLivebuyPlayer.theme` 改選填**，省略時比照內部 `LivebuyPlayer` 自解析
+  （parity iOS/Flutter 既有行為）。
+- **商品 sheet 開啟時抑制垂直滑動換片**——同 iOS。
+
+### Changed
+
+- **一般觀眾留言暱稱改粉色 `#FBB0B7` + 訊息不限行數**——同 iOS。
+- **「介紹中」等化器圖示改呼吸動畫**——同 iOS（design R40）。
+- **讚按鈕特效重寫**（design R37）——同 iOS。
+- **⚠️ BREAKING — 讚特效 4 種圖案全改用真實 PNG 素材**：愛心圖案不再吃呼叫端 `color`/
+  `theme.accent` 染色，改為顯示 PNG 本身烘焙好的固定色，推翻上一輪「愛心特殊、吃 accent」的
+  決定（純視覺行為，無 API 簽章影響）。
+
+### Fixed
+
+- **商品明細大圖橫向換頁手勢改軸向優勢仲裁**，修復阻擋外層 sheet 垂直捲動。
+- **直播公告橫幅換行行距補 explicit `lineHeight` 收緊**。
+- **VOD「正在介紹」商品卡輪播出現時機提早於側欄/浮動商品袋**——同 iOS，改為共用同一渲染
+  閘門（`shouldShowNowIntroducingCarousel`）。
+- **`bindSession`/`clearUser` 對重疊呼叫改為序列化執行**（core）——同 iOS。
+
 ## [4.15.0] - 2026-09-07
 
 > **Minor.** 同 iOS，自 `4.14.0` 以來累積 67 個 commit（Android 9 個）。**含 1 項 ⚠️
