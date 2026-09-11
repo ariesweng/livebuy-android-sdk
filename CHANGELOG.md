@@ -11,6 +11,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.18.0] - 2026-09-11
+
+> **Minor.** 自 `4.17.0` 以來累積 169 個 commit（Android 15 個獨立行為——含發版準備期間
+> 追加的「靜音偏好跨 App session 持久化」與「回放聊天室隱藏公式補上 subtitleAvailable
+> 防禦性判斷」兩批，另 1 個純測試 baseline 補件 commit 與 2 個支援性/Example-only commit
+> 不計入本檔）。**含 2 項
+> ⚠️ BREAKING**：CC 字幕鈕圖示重新設計（design R42，與 iOS 相同——本檔訂正上游 change
+> proposal 自身遺漏的 BREAKING 標記，行為與 iOS/RN/Flutter 一致）、現正直播 pill 預設
+> 改為開啟並自動帶入 shopId（僅 Android，iOS 已在 v4.17.0 落地同款翻轉）。版號對齊 iOS SDK
+> `v4.18.0`（兩端 lockstep）。內部 `versionName`（`X-SDK-Version`）不變。iOS 對照見
+> [`livebuy-ios-sdk/CHANGELOG.md`](../livebuy-ios-sdk/CHANGELOG.md#4180---2026-09-11)。完整
+> 敘述見 [`docs/release-notes/v4.18.0.md`](../docs/release-notes/v4.18.0.md)。
+
+### Added
+
+- **主播斷線重試耗盡後的確認式恢復**（core）——同 iOS：既有 5 秒 goods-poll 或 20 秒
+  channel-refresh 任一確認頻道仍在線即自動重新載入。
+- **靜音偏好跨 App session 於 Player instance 重建後持久化**（core）——同 iOS：新增
+  process-wide、純記憶體的 `MutePreferenceStore`，讓關閉播放器再重新開啟的新 instance
+  沿用使用者剛設定的靜音偏好；新增 public `isMuted` getter，供 host / template 層查詢
+  目前實際的靜音狀態。
+
+### Changed
+
+- **開場片播放期間 `setMuted` 現在會延續到主播放**（core）——同 iOS：反轉先前「intro
+  交棒不延續」的規則（`play` / `pause` 不受影響，仍不延續）；開場片本身也改為一律套用
+  目前的 `userMuted`。
+- **⚠️ BREAKING — CC 字幕鈕圖示重新設計**（design R42，reference-ui）——同 iOS：反轉既有
+  「不可用時整個省略 pill」的 MUST 規則，改為恆渲染 + 點擊顯示自動消失 tooltip。
+- **⚠️ BREAKING（僅 Android）— 現正直播 pill 預設改為開啟並自動帶入 shopId**：新增
+  `showsLiveNowPill: Boolean = true`（預設 on），`shopId == null` 時改用
+  `LivebuySDK.currentShopId()` 自動解析。任何已 `configure(shopId = ...)` 且未手動設定
+  `LivebuyPlayerConfig.shopId` 的 host，升級後會開始看到這顆 pill；想維持舊行為設
+  `showsLiveNowPill = false`。iOS/RN/Flutter 已在更早版本完成同款行為，不受本項影響。
+- **字幕疊層改為對齊設計稿的窄框內水平置中**（reference-ui）：VOD/回放不同 right inset，
+  並在回放開字幕時隱藏聊天室。
+- **`LivebuyLiveEntry` 浮動入口卡隱藏觀看人數徽章**（reference-ui）。
+- **最低 compileSdk 需求提升至 35**（`livebuy` / `livebuy-ui` / `livebuy-reference-ui` /
+  `shophost`）：配合 media3 依賴從 1.3.0 升到 1.8.0 的 AAR metadata 要求。任何消費這些
+  模組的 host app，自身 `compileSdk` 須 `>= 35`，否則 Gradle 建置會在 AAR metadata 檢查
+  階段失敗。不改動任何 public API，僅為建置環境前提變動，不計 semver BREAKING。
+
+### Fixed
+
+- **主播斷線後修復三個真機發現的播放 bug**（core）：RN bridge 缺 `@ReactModule` annotation
+  導致必然 crash、media3 依賴版本衝突讓已修過的黑屏 bug 復發、IVS render surface 量不到
+  非零尺寸永遠黑屏。三者皆真機端到端驗證修復有效。
+- **EndScreen 直播結束畫面 gate 鎖存 `isLive`/`isFinishedLiveReplay`**（reference-ui），
+  避免背景 channel-refresh job 誤判關閉 player。
+- **延遲冒泡 sheet 關閉事件對齊滑出動畫**（reference-ui，Android-only），修復合流聊天疊在
+  未收完的 sheet 上。
+- **字幕疊層/釘選卡/公告底部安全間隙改為單一事實來源**（reference-ui）——同 iOS。
+- **CC「未提供字幕」tooltip 邊界夾制後箭頭改為反向補償**（reference-ui）——同 iOS。
+- **CC 不可用 tooltip 加螢幕邊界夾制**（reference-ui），避免直播回放時 tooltip 溢出螢幕
+  右緣——同 iOS。
+- **`PollManager` 首輪 poll 改立即發送**（core，Android-only），修復進直播間訊息延遲，
+  追平 iOS 既有行為。
+- **靜音圖示 attach 種子改讀新的 `MutePreferenceStore.current()`**（template）——同 iOS
+  的 `isMuted` getter 修法，但改讀 store 本身（迴避 Android 專屬時序陷阱：attach 種子經
+  `onInstantiate` hook 在 `LivebuyPlayerView` 自己的 `init {}` 內同步觸發，早於
+  `userMuted` property 自己的 initializer 執行）；修復真機實測回報「音量圖示沒套用到」。
+- **回放聊天室隱藏公式補上 `subtitleAvailable` 防禦性判斷**（reference-ui），與 iOS/Flutter
+  結構一致——查證後確認 Android 現行 `SubtitleTrack` 架構下換片會主動清空 `enabled`，
+  「CC 已開啟但字幕不可用」這個組合本不可能發生，本項屬防禦性 hardening，**非修復 Android
+  上可重現的 bug**（詳見 `docs/reference-ui/parity-debt-ledger.md` #28）。
+
+> 註：`rb-android-recommendation-switch-scroll-reset`（v4.17.0 已發佈功能）遺漏的兩張
+> Roborazzi baseline PNG 已於本輪補齊。純測試完整性補件，無生產程式碼變動，不計入上方
+> Fixed。
+
 ## [4.17.0] - 2026-09-10
 
 > **Minor.** 同 iOS，自 `4.16.0` 以來累積 69 個 commit（Android 11 個獨立行為，另 2 個支援性
