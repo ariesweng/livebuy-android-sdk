@@ -3,8 +3,8 @@
   <groupId>tv.livebuy</groupId>
   <artifactId>livebuy</artifactId>
   <versioning>
-    <latest>4.18.0</latest>
-    <release>4.18.0</release>
+    <latest>4.19.0</latest>
+    <release>4.19.0</release>
     <versions>
       <version>3.1.3</version>
       <version>3.2.0</version>
@@ -33,7 +33,8 @@
       <version>4.16.0</version>
       <version>4.17.0</version>
       <version>4.18.0</version>
+      <version>4.19.0</version>
     </versions>
-    <lastUpdated>20260911073547</lastUpdated>
+    <lastUpdated>20260912163744</lastUpdated>
   </versioning>
 </metadata>

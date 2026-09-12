@@ -11,6 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.19.0] - 2026-09-13
+
+> **Minor.** 自 `4.18.0` 以來累積 18 個相關 commit（Android 3 個獨立行為，皆與 iOS 共同；
+> 其餘為 RN/Flutter 自身獨立進行中的批次與 1 個純治理文件 commit，不計入本檔）。主軸是
+> 加購前本地攔截未登入使用者（新全域設定）、`CART_ADD_REQUEST` 事件補回傳加購數量，以及
+> 標記一個從未被使用的加購批次結帳模式為 deprecated。**零 BREAKING**。完整敘述見
+> [`docs/release-notes/v4.19.0.md`](../docs/release-notes/v4.19.0.md)。
+
+### Added
+
+- **加購前本地攔截未登入使用者**（core，`requireLoginForAddToCart`）：新增全域設定
+  （default `false`，additive），開啟後未登入使用者呼叫加購會被本地攔截（不打
+  `/sdk/video/addcart`），呈現既有登入閘 UI，同 iOS。
+- **`CART_ADD_REQUEST` 事件補回傳加購數量**（core，`num`）：additive 新增欄位，值為呼叫
+  `addToCart` 時實際傳入的數量，含獎品自動加購路徑，同 iOS。
+
+### Deprecated
+
+- **`addToCart` 的 `ids`（批次結帳模式）標記淘汰**（core）：查證零呼叫端使用，且未經核實
+  對現行後端可用；加 doc comment 說明，預告下一個四端同步的 major 版本移除。零執行期行為
+  改變，同 iOS。
+
 ## [4.18.0] - 2026-09-11
 
 > **Minor.** 自 `4.17.0` 以來累積 169 個 commit（Android 15 個獨立行為——含發版準備期間
