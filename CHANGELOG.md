@@ -11,6 +11,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.20.0] - 2026-09-17
+
+> **Minor.** 自 `4.19.0` 以來累積 54 個相關 commit（Android 8 個獨立行為，5 個主題；其餘為
+> iOS 專屬/RN/Flutter 自身獨立進行中的批次/上一輪發版收尾/純治理文件與調查筆記，不計入本檔）。
+> 主軸是 VideoInfoSheet 三態文案改版、商品名稱前標籤換行擠壓修正、結束畫面關閉鈕修正，以及
+> VOD/回放拖曳 seek 精確度優化。**淨零 BREAKING**（一組同日 introduce+revert 的 BREAKING
+> 配對完全抵銷）。完整敘述見 [`docs/release-notes/v4.20.0.md`](../docs/release-notes/v4.20.0.md)。
+
+### Added
+
+- **VideoInfoSheet 三態文案改版**（reference-ui，design R44）：同 iOS。
+- **VOD/回放拖曳 seek 精確度優化**（core + template + reference-ui，`beginScrub`/
+  `endScrub`）：`PlaybackEngine` 新增拖曳態 seek 精確度提示方法，拖曳中切換
+  `SeekParameters.CLOSEST_SYNC`、放開立即恢復 `EXACT`，已接上原生拖曳手勢。過程中一度全域
+  套用 `CLOSEST_SYNC` 造成音畫不同步偽影，已同日撤回，淨效果完全抵銷，不構成淨 BREAKING。
+
+### Fixed
+
+- **商品列名稱前標籤換行擠壓修正**（reference-ui，design R39）：同 iOS，改用
+  `InlineTextContent`。
+- **結束畫面顯示期間右上角鈕固定為直接關閉**（reference-ui）：補齊 iOS/RN 已有的既有行為
+  parity。
+
 ## [4.19.0] - 2026-09-13
 
 > **Minor.** 自 `4.18.0` 以來累積 18 個相關 commit（Android 3 個獨立行為，皆與 iOS 共同；
