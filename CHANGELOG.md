@@ -11,6 +11,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.21.0] - 2026-09-19
+
+> **Minor.** 自 `4.20.0` 以來累積 59 個相關 commit（4 個屬於上一輪 v4.20.0 發版收尾、2 個純
+> 治理/記錄文件，不計入本檔；其餘 53 個歸為 7 個分類，Android 相關 11 個獨立行為）。主軸是
+> 四輪 design（R45/D8/R46/R47）視覺批次四端落地、商品明細/MiniCart 原價劃線色票與呈現
+> parity 收尾、IVS 直播引擎新增 opt-in TextureView 輸出模式，以及一批內部清理。**零
+> BREAKING**。完整敘述見 [`docs/release-notes/v4.21.0.md`](../docs/release-notes/v4.21.0.md)。
+
+### Added
+
+- **MiniCartPeek 原價劃線渲染**（reference-ui，`originalPriceShow`）：同 iOS，parity
+  iOS/RN/Flutter 已完成，四端全數完成。
+- **IVS 直播引擎新增 opt-in TextureView 輸出模式**（core，`LBLiveVideoSurfaceMode`）：
+  `IvsPlaybackEngine` 新增設定，host 可 opt-in 切換直播畫面輸出為 `TextureView`；預設維持
+  既有 `SurfaceView`，零行為變化。純加法（新 enum + 新屬性）。
+
+### Fixed
+
+- **Design R45/D8/R46/R47 四輪視覺批次**（reference-ui）：同 iOS，商品列表 row 排版重分組
+  + 折扣百分比改用 `FlowRow`、grid 原價改用 `FlowRow` 換行、雙擊快進/快退半螢幕漸層、
+  `AddToCartSheet` 價格垂直堆疊。
+- **商品明細 sheet 原價劃線色票統一 `#A0A0A0`**（reference-ui）：同 iOS，四端全數完成。
+- **內部清理**（core）：刪除已無呼叫點的 PiP surface detach/reattach 孤兒方法；修正
+  `PowerProfileManagerTest` 的 GC 弱引用測試缺陷。皆無 host 可見行為變化。
+
 ## [4.20.0] - 2026-09-17
 
 > **Minor.** 自 `4.19.0` 以來累積 54 個相關 commit（Android 8 個獨立行為，5 個主題；其餘為
