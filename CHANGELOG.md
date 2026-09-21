@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.21.2] - 2026-09-21
+
+> **Patch.** 自 `4.21.0` 以來累積 2 個 Android 相關 commit（`4.21.1` 版號被上一輪 iOS-only
+> patch 使用，Android 當時零改動）。兩顆皆為純 bug fix，**零 BREAKING**。完整敘述見
+> [`docs/release-notes/v4.21.2.md`](../docs/release-notes/v4.21.2.md)。
+
+### Fixed
+
+- View-mode（RN / Flutter 的 Android bridge 皆走此路徑）的
+  `LivebuyPlayerView.notifyPictureInPictureModeChanged` 補齊四端統一事件 `PIP_STATE_CHANGE`
+  的 emit，收斂成單一發送點；`LivebuyPlayerActivity` 移除原本的重複 dispatch。
+- 播放器卸載時補上 API 31+ 系統 auto-enter PiP 的配對解除（`ArmAutoPiP`），修好「關閉播放器
+  按 Home 鍵會把 host App 當下畫面塞進 PiP」的缺口。
+
 ## [4.21.0] - 2026-09-19
 
 > **Minor.** 自 `4.20.0` 以來累積 59 個相關 commit（4 個屬於上一輪 v4.20.0 發版收尾、2 個純
