@@ -11,6 +11,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.23.0] - 2026-09-25
+
+> **Minor。** 自 `4.22.0` 以來累積 9 個相關 commit，歸為 5 個主題（無中獎自動加購登入閘，
+> iOS-only）。**零 BREAKING**——本版對應的 iOS 那項行為性 BREAKING（`subscribe` 登入後重試
+> 機制變更）Android 本批次無對應 change，不影響 Android。完整敘述見
+> [`docs/release-notes/v4.23.0.md`](../docs/release-notes/v4.23.0.md)。
+
+### Added
+
+- **AUTH_REQUIRED 覆蓋率補齊**（core，parity iOS）：`cart_add` 被動接的 `AUTH_REQUIRED`
+  payload 補齊 `video_id`；`comment_send` 的 `ChatRequiresLogin` 401 現在也 dispatch
+  `AUTH_REQUIRED`（既有錯誤管道保留不變）；`comment_send` 新增對稱的 opt-in 主動擋
+  `configure(requireLoginForCommentSend:)`（預設 `false`）；新增
+  `LivebuySDK.dispatchAuthRequired(triggerAction:videoId:productId:)` public 方法，讓
+  `livebuy-ui` module（及未來呼叫方）可主動觸發 `AUTH_REQUIRED`——`cart_add` 主動擋
+  （`DefaultPlayerTemplate.addToCart()`）現在會呼叫它，讓純 headless host 也能收到通知；
+  新增 opt-in 旗標 `configure(requireLoginForAwardClaim:)`——**本版內新增又於同一批次內
+  移除**，最終未對外發布過（見下方「移除」段），不影響本版最終行為。**注意**：iOS 同批次
+  額外新增的「登入後明確重試」機制（`registerPendingRetry`/`retryPendingAction`/
+  `discardPendingAction`）與 `subscribe` 遷移，**Android 本批次尚未落地**（無對應
+  change，非遺漏——刻意分階段順序，iOS 先行、Android 待後續獨立批次）。
+- **播放器初始 seek**（core + reference-ui，`player-load-initial-seek`，parity iOS）：
+  `load(videoId, startAt)` 新增可選初始 seek 秒數參數，讓 host 從商品頁直接打開指定影片並
+  跳到指定時間點。只對主內容生效（intro-aware，等 intro 播完才套用）、直播靜默丟棄、每次
+  `load()` 呼叫覆蓋殘留值、一次性套用後即清空。drop-in 容器 `LivebuyPlayerConfig` 新增對應
+  欄位 `initialSeekSeconds`，只在容器首次建立套用，換片路徑不套用。
+- **事件補播放進度**（core，`event-progress-timestamp`，parity iOS）：帶 `video_id`-shaped
+  key（`video_id`/`from_video_id`/`to_video_id`）的通知事件，additive 新增 `position`
+  （`Double`，秒）欄位。`VIDEO_SWITCH` 為特例，帶的是切換前 FROM 影片的最後位置。純加法，
+  不影響既有 key／值／派發時機／攔截語意。
+- **輪播/影音商城 widget 首次載入佔位**（template + reference-ui，parity iOS）：
+  `LBWidgetContent` 新增衍生欄位 `isLoading`；`CarouselView`/`VideoShopGridView` 首次
+  載入時顯示品牌 loading 動畫佔位，取代先前完全無佔位、資料一到才彈出完整高度造成的版面
+  跳動；確認為空清單時整個 widget 不渲染。turnkey `LivebuyWidget` 容器另用可靠的
+  `loadAttempted` 訊號驅動（因既有 notify 時機架構限制，單純依賴 `isLoading` 在生產路徑
+  上觀察不到 `true`）；`WidgetOverlayView` 手動組裝入口目前仍受此限制，是已知、誠實記錄
+  的殘留缺口（不影響 turnkey host）。
+- **輪播 widget header 列新增 `showsHeader` opt-out 開關**（reference-ui，parity iOS）：
+  `LivebuyWidgetConfig.showsHeader`（預設 `true`，行為不變）。
+
+### Removed
+
+- **移除從未發布過的 `requireLoginForAwardClaim`**（`award-claim-login-gate` 退場，parity
+  iOS）：這個旗標在本批次內新增又移除，最終未曾出現在任何已發布正式版本，退場不構成對外
+  breaking change。
+
 ## [4.22.0] - 2026-09-23
 
 > **Minor。** 自 `4.21.2` 以來累積 43 個相關 commit，歸為 6 個分類，其中 5 個涉及 Android
