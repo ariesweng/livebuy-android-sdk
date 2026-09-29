@@ -11,6 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.25.0] - 2026-09-29
+
+> **Minor（iOS + Android lockstep）。** 自 `4.24.0`（Android-only）以來唯一產品變更；與 iOS 重新對齊同號。純新增、**無 BREAKING**。完整敘述見
+> [`docs/release-notes/v4.25.0.md`](../docs/release-notes/v4.25.0.md)。
+
+### Added
+
+- **drop-in 主動加購登入閘帶 `retry_token`**（template）：`requireLoginForAddToCart` 為 true 且訪客
+  點加購時，drop-in 先註冊「登入後重跑同一次加購」的 closure，再派發
+  `AUTH_REQUIRED(trigger_action="cart_add")` 並帶 `retry_token`。host 登入後呼叫
+  `retryPendingAction(token)` 重跑同一次加購；放棄則 `discardPendingAction(token)`。SDK 仍不自動
+  replay。被動接（後端回空 `buy_no`）、`comment_send`、`subscribe` 的 token 行為不變。
+
+### Changed
+
+- 無公開符號變更（新增的注入點皆 internal；所用 public API 早已於 iOS `4.23.0` / Android `4.24.0`
+  出貨）。既有 listener 不讀 `retry_token` 即無感。
+
+### Fixed
+
+- （無）
+
 ## [4.24.0] - 2026-09-29
 
 > **Minor（Android-only）。** 自 `4.23.0` 以來唯一產品變更：Android 補齊登入後明確重試機制
