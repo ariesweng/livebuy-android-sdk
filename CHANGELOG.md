@@ -11,6 +11,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.24.0] - 2026-09-29
+
+> **Minor（Android-only）。** 自 `4.23.0` 以來唯一產品變更：Android 補齊登入後明確重試機制
+> （parity iOS `4.23.0`）。**⚠️ 含 1 項行為變更**（`subscribe` 不再自動 replay，非源碼破壞、
+> 零公開符號移除），詳見下方 Changed。完整敘述見
+> [`docs/release-notes/v4.24.0.md`](../docs/release-notes/v4.24.0.md)。
+
+### Added
+
+- **登入後明確重試機制**（core，parity iOS）：`LivebuySDK.registerPendingRetry(action): String` /
+  `retryPendingAction(token): Boolean` / `discardPendingAction(token)`。`AUTH_REQUIRED` 事件在
+  `cart_add`（被動接）/ `comment_send`（被動與主動）/ `subscribe` 各派發點帶 `retry_token`；host
+  登入後呼叫 `retryPendingAction(token)` 以相同引數重呼叫原入口。無時間上限、一次性、`clearUser()`
+  清空、`setUser()` 不自動觸發；player 卸載時 discard 自己註冊的 token。
+  `dispatchAuthRequired(...)` 新增選填參數 `retryToken: String? = null`（附加在 `position` 之後，
+  源碼相容）。
+
+### Changed
+
+- **⚠️ 行為變更（非源碼破壞）**：`subscribe` 被攔下（`AUTH_REQUIRED`）後，`setUser(...)` **不再於
+  30 秒內自動 replay** 該事件（刪除內部 `PendingAuthStore` / `triggerAuthRequired`，皆非 public）。
+  **Host 遷移**：收到 `AUTH_REQUIRED` 時保存事件 params 的 `retry_token`，登入完成後自行呼叫
+  `LivebuySDK.retryPendingAction(token)`。舊機制只會再發一次 `AUTH_REQUIRED` 通知、並不真的重試
+  訂閱，實務影響低；`cart_add` / `comment_send` 原本就不自動 replay，不受影響。
+
+### Fixed
+
+- `LBEvent.AUTH_REQUIRED` KDoc 與 event registry 描述原寫「僅 iOS，Android 無 `retry_token`」，與
+  實際行為不符，已更正。
+
 ## [4.23.0] - 2026-09-25
 
 > **Minor。** 自 `4.22.0` 以來累積 9 個相關 commit，歸為 5 個主題（無中獎自動加購登入閘，
