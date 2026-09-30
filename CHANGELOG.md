@@ -11,6 +11,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.25.1] - 2026-09-30
+
+> **Patch（Android-only）。** 純 bug fix、**無 BREAKING**、零公開符號移除／改簽章；iOS 不發，維持 `4.25.0`。完整敘述見
+> [`docs/release-notes/v4.25.1.md`](../docs/release-notes/v4.25.1.md)。
+
+### Added
+
+- （無；新增的 `onCartLoginGatePresentedChange` / `cartLoginGatePresented` 皆為 `livebuy-reference-ui`
+  內部接線用的帶預設值可選參數，既有呼叫端源碼相容。）
+
+### Changed
+
+- （無）
+
+### Fixed
+
+- **drop-in 主動加購閘不再疊出兩個「請先登入」**（`livebuy-reference-ui`）：商品面板 cart 登入閘正在
+  畫面上時，gap-surface 的 `AuthGateModal(cartAdd)` 讓位並消耗殘留 authGate；cart 閘不在畫面上
+  （按「稍後再說」後再點、外部 widget／headless 訪客）時 gap modal 仍顯示。已知取捨：被動 401 時序
+  gap modal 可能閃現約一格才讓位；未經真機驗證。
+
 ## [4.25.0] - 2026-09-29
 
 > **Minor（iOS + Android lockstep）。** 自 `4.24.0`（Android-only）以來唯一產品變更；與 iOS 重新對齊同號。純新增、**無 BREAKING**。完整敘述見
