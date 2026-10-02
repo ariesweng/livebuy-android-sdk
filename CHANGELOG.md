@@ -11,6 +11,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.26.1] - 2026-10-02
+
+> **Patch（Android-only）。** 純 consumer 規則變更、**無 BREAKING**、零 public 符號變動、零執行期程式碼變更；iOS
+> 不發，維持 `4.26.0`。完整敘述見 [`docs/release-notes/v4.26.1.md`](../docs/release-notes/v4.26.1.md)。
+
+### Added
+
+- （無）
+
+### Changed
+
+- （無）
+
+### Fixed
+
+- **縮碼 host 未自行補 WorkManager／Room keep 規則時啟動即崩潰**（`livebuy`）：
+  `NoSuchMethodException: androidx.work.impl.WorkDatabase_Impl.<init> []`。AAR 的 consumer 規則新增三條 keep
+  （`RoomDatabase` 與 `InputMerger` 子類別的無參數建構子、`ListenableWorker` 子類別的
+  `(Context, WorkerParameters)` 建構子），host 不必再為 Livebuy SDK 寫任何 keep 規則。以預設設定的 Flutter
+  release build 在模擬器做過改前崩潰／改後正常的對照；未經真機驗證。
+
 ## [4.26.0] - 2026-10-02
 
 > **Minor（iOS + Android lockstep）。** 上架審查相關批次。**零公開符號移除／改簽章**；
@@ -36,8 +57,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **host 開 R8 後 API 解析全部失效**（`livebuy`）：`4.25.1` 及更早版本的 DTO 會被 R8 整個移除；本版
-  隨 consumer 規則修正。開 R8 的 host 必須升級。
+- **host 開 R8 且未自行補 `tv.livebuy.**` keep 規則時 API 解析全部失效**（`livebuy`）：`4.25.1` 及更早
+  版本的 AAR 沒有自帶 Gson 反射目標的規則，DTO 會被 R8 整個移除；本版隨 consumer 規則修正。已依整合
+  文件補過 `-keep class tv.livebuy.** { *; }` 的 host 原本就不受影響。`androidx.work.**` /
+  `androidx.room.**` 規則請維持。
 - **真實 IVS 下 host 開 R8 建置失敗**（`Missing class okhttp3.*`）。
 
 ## [4.25.1] - 2026-09-30
