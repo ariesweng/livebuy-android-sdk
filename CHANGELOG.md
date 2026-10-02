@@ -11,6 +11,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.26.0] - 2026-10-02
+
+> **Minor（iOS + Android lockstep）。** 上架審查相關批次。**零公開符號移除／改簽章**；
+> `livebuy-reference-ui` 新增一個相依並有行為變更（見 Changed）。完整敘述見
+> [`docs/release-notes/v4.26.0.md`](../docs/release-notes/v4.26.0.md)。
+
+### Added
+
+- **R8 consumer 規則**（`livebuy`）：AAR 自帶 Gson 反射目標的 keep 規則（收窄到實際被反射的型別）與
+  `-dontwarn okhttp3.**` / `-dontwarn okio.**`，host 自動套用、不必自己寫。
+- **drop-in 容器自行處理系統邊距**（`livebuy-reference-ui`）：`LivebuyPlayer`／
+  `CollapsibleLivebuyPlayer`／`LivebuyLiveEntry` 的 chrome 避開狀態列／導覽或手勢列／cutout／鍵盤，
+  影片與背景滿版；host 已處理時不重複套用。
+
+### Changed
+
+- ⚠️ **新增相依 `com.github.bumptech.glide:glide:4.16.0`**（`livebuy-reference-ui`）：遠端靜態圖改由
+  Glide core 載入（`HttpURLConnection`，**不帶 OkHttp**；無全域 Glide 設定）——依顯示尺寸降採樣、
+  記憶體＋磁碟快取、離開畫面即取消。移除手刻載入器與 8 MB bitmap 快取。
+- ⚠️ **`LivebuyPlayerHostActivity` 在所有 API level 啟用 edge-to-edge**（透明系統列＋淺色圖示）。嵌在
+  host Activity 內的 composable 不改 host 的系統列外觀。
+- 商品圖預取改為只預取「介紹中」商品卡縮圖尺寸；其他尺寸的表面首次顯示由磁碟快取解碼，會看到一次淡入。
+
+### Fixed
+
+- **host 開 R8 後 API 解析全部失效**（`livebuy`）：`4.25.1` 及更早版本的 DTO 會被 R8 整個移除；本版
+  隨 consumer 規則修正。開 R8 的 host 必須升級。
+- **真實 IVS 下 host 開 R8 建置失敗**（`Missing class okhttp3.*`）。
+
 ## [4.25.1] - 2026-09-30
 
 > **Patch（Android-only）。** 純 bug fix、**無 BREAKING**、零公開符號移除／改簽章；iOS 不發，維持 `4.25.0`。完整敘述見
