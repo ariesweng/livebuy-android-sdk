@@ -11,6 +11,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.27.0] - 2026-10-03
+
+> **Minor（iOS + Android lockstep）。** Android 自 `4.26.2`、iOS 自 `4.26.0` 升級，兩端重新對齊同號。只動
+> `livebuy-reference-ui`；**無 BREAKING**——`StartScreenView` 等 composable 新增帶預設值的 `sheetsPresented` 參數（原呼叫碼
+> 不必改）。`livebuy`（core）與 `livebuy-ui` 原始碼零變更，僅隨版號。完整敘述見
+> [`docs/release-notes/v4.27.0.md`](../docs/release-notes/v4.27.0.md)。
+
+### Added
+
+- `StartScreenView`／`MomentsOverlayView` 新增 `sheetsPresented: Boolean = false`（`livebuy-reference-ui`）：為 `true` 時不畫
+  「略過介紹」鈕。
+
+### Changed
+
+- （無）
+
+### Fixed
+
+- **開場影片播放中打開商品面板，「略過介紹」鈕仍顯示在面板上方**（reference-ui）：依設計稿層級（商品面板高於略過鈕），
+  任一商品面板開著時隱藏略過鈕，關閉後恢復。未用有開場影片的頻道實測、未經真機驗證。
+
 ## [4.26.2] - 2026-10-03
 
 > **Patch（Android-only）。** 只動 `livebuy-reference-ui` 的圖示外觀、**無 BREAKING**、零 public 符號變動；iOS 不發，
