@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.26.2] - 2026-10-03
+
+> **Patch（Android-only）。** 只動 `livebuy-reference-ui` 的圖示外觀、**無 BREAKING**、零 public 符號變動；iOS 不發，
+> 維持 `4.26.0`。完整敘述見 [`docs/release-notes/v4.26.2.md`](../docs/release-notes/v4.26.2.md)。
+
+### Added
+
+- （無）
+
+### Changed
+
+- （無）
+
+### Fixed
+
+- **錯誤畫面「找不到這部影片」的圖示與設計稿不符**（`livebuy-reference-ui`）：原與連線錯誤共用斷線 wifi 圖示，改為
+  設計稿的放大鏡加驚嘆號。文字、按鈕、行為不變。未經真機驗證。
+
 ## [4.26.1] - 2026-10-02
 
 > **Patch（Android-only）。** 純 consumer 規則變更、**無 BREAKING**、零 public 符號變動、零執行期程式碼變更；iOS
