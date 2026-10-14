@@ -11,6 +11,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.28.0] - 2026-10-14
+
+> **Minor（iOS + Android lockstep）。** Android、iOS 皆自 `4.27.0` 升級；三模組（`livebuy`／`livebuy-ui`／
+> `livebuy-reference-ui`）同版號一起發佈。**源碼面無 BREAKING**——新增帶預設值的 `configure(vodEndBehavior =)` 參數與
+> `LBVodEndBehavior`，原呼叫碼不必改；但 **⚠️ 預設播完行為改變**（見 Changed）。`livebuy-ui` 原始碼零變更，僅隨版號。
+> 完整敘述見 [`docs/release-notes/v4.28.0.md`](../docs/release-notes/v4.28.0.md)。
+
+### Added
+
+- `LBVodEndBehavior { LOOP, ADVANCE }`（`livebuy`）：VOD／回放（`liveStatus != 1`）自然播完時的全域行為。`LOOP`＝重播當前
+  影片（預設）；`ADVANCE`＝舊行為（有下一支就接續、沒有就停在 `ENDED`）。直播（`liveStatus == 1`）結束不受影響。
+- `LivebuySDK.configure(...)` 參數列尾端新增 `vodEndBehavior: LBVodEndBehavior = LBVodEndBehavior.LOOP`；新增唯讀
+  `LivebuySDK.currentVodEndBehavior()`。設定值只存在記憶體（不寫 `SharedPreferences`），每次 `configure` 以傳入值或預設
+  `LOOP` 覆寫。
+
+### Changed
+
+- ⚠️ **VOD／回放播完的預設行為改為重播當前影片**（`livebuy`）：以前有下一支會自動接續（`load` 下一支、invoke
+  `onDidAutoAdvance`）；沒有下一支但有 `hot` 時會進結束畫面倒數。現在預設回到開頭重播，有無下一支皆然。重播時
+  `playerState` 仍會先發一次 `ENDED`、再回到 `PLAYING`；不 `load`、不 invoke `onDidAutoAdvance`、不起結束畫面倒數、不重發
+  `VIDEO_OPEN`／stat `video_pv`。**要維持舊行為請傳 `configure(..., vodEndBehavior = LBVodEndBehavior.ADVANCE)`。**
+  有監聽 `ENDED` 的 host 注意：預設下每播完一輪都會收到一次。
+- ⚠️ **`ADVANCE` 下非直播播完、沒有下一支時一律停在 `ENDED`**（`livebuy`）：以前只要 `hot` 非空就會進
+  `END_SCREEN_SHOWN` 並倒數；現在不論 `hot`，與 iOS 一致。直播結束仍進結束畫面。headless host 若依 `END_SCREEN_SHOWN`
+  畫 VOD 的結束畫面，這個情境不會再收到它。
+- ⚠️ **`ADVANCE` 下 VOD／回放播完且沒有下一支時，drop-in 播放器會自動關閉**（`livebuy-reference-ui`）：`ENDED` 持續約
+  400ms 後關閉（走既有關閉出口：有 `onDismiss` 就呼叫它，否則 unload），不論有無 `hot`。以前一般 VOD 只有在 `hot` 非空
+  （core 進結束畫面）時才關閉，`hot` 為空時停在最後一幀。**已結束直播的回放也一樣關閉，不再顯示「直播已結束」結束畫面。**
+  `LOOP` 與直播結束不會關閉。舊的 `ObserveVodEndScreenAutoClose`（以結束畫面是否出現判斷關閉）已移除——它屬
+  `internal`，不影響公開 API。
+
+### Fixed
+
+- （無）
+
+> **驗證範圍**：單元測試以 fake 播放引擎驗證呼叫順序；**未經真機驗證**——ExoPlayer 播完 → `seekTo(0)` → `play()` 的銜接
+> 順暢度、重播時背景音樂 session／PiP 的表現，以及 400ms 關閉的實際觀感都待實機確認。
+
 ## [4.27.0] - 2026-10-03
 
 > **Minor（iOS + Android lockstep）。** Android 自 `4.26.2`、iOS 自 `4.26.0` 升級，兩端重新對齊同號。只動
