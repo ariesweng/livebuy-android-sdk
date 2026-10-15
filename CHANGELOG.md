@@ -11,6 +11,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.29.0] - 2026-10-15
+
+> **Minor（iOS + Android lockstep）。** Android、iOS 皆自 `4.28.0` 升級；三模組（`livebuy`／`livebuy-ui`／
+> `livebuy-reference-ui`）同版號一起發佈。**文件化的公開 API 無源碼面 BREAKING；另有一條未文件化資源的 ⚠️ BREAKING 移除（見 Removed）**——新增 `LivebuySDK.currentLanguage`、
+> `LivebuySDK.addLanguageListener`；兩個 `notifiedSoldOutIds` 保留為 `@Deprecated`。但 **⚠️ 語言行為改變**、
+> **⚠️ core AAR 不再帶 78 個 string 資源**、**⚠️ `ChatView` 不再注入售完列**（見 Changed／Removed）。
+> **要維持繁中請 `configure(..., lang = "zh-TW")`。** `livebuy-ui` 原始碼零變更，僅隨版號。完整敘述見
+> [`docs/release-notes/v4.29.0.md`](../docs/release-notes/v4.29.0.md)。
+
+### Added
+
+- `LivebuySDK.currentLanguage: String`（`livebuy`，`@JvmStatic`；Java `LivebuySDK.getCurrentLanguage()`）：目前生效的
+  語言，永遠是 5 語系之一（`zh-TW`／`zh-CN`／`en`／`ms-MY`／`id-ID`）；`configure` 之前也可讀（手機語言，不支援時為
+  `en`），不拋例外。
+- `LivebuySDK.addLanguageListener(listener: (String) -> Unit): () -> Unit`（`livebuy`，`@JvmStatic`；Java 參數
+  `Function1<String, Unit>`、回傳 `Function0<Unit>`）：目前語言**實際改變**時以 main Looper 非同步、依訂閱順序通知；
+  不需要也不影響 host 的 `setEventListener`；訂閱時不重播目前值；`configure()` 前也可呼叫。回傳的 lambda 用來取消訂閱，
+  可重複呼叫；單一 listener 拋例外會記 log 並繼續通知其他人。
+- reference-ui 自帶五語系字串表（134 key＝iOS 133＋Android 獨有 1，譯文與 iOS 逐字一致），依
+  `LivebuySDK.currentLanguage` 顯示，語言改變時 Compose 自動重繪（含 contentDescription、直播預告的月日格式）。
+- 執行中跟隨系統語言／Android 13 per-app 語言變更（`livebuy`）：`configure` 之後在 application context 註冊
+  `ComponentCallbacks`，系統語言改變（app 未被結束）時重新取樣，結果改變才派發；host 指定語言時不受影響。
+
+### Changed
+
+- ⚠️ **語言優先序改為 host（`configure(lang=)`／`setLanguage`）> 手機系統語言（屬 5 語系才採用）> API `lang` > `en`**
+  （`livebuy`）。舊版 Android 實際上是「沒指定就固定 `zh-TW`」（API `lang` 層沒接上、不看手機語言）。系統語言對應
+  規則與 iOS 相同（`zh-Hant`／TW／HK／MO → `zh-TW`；`zh-Hans`／CN／SG／裸 `zh` → `zh-CN`；`en*`／`ms*`／`id*`、`in*`
+  各自對應）；`configure(lang=)` 傳入不支援的值改為視同未設定。
+  **影響**：沒指定語言的 host，手機是英文／馬來文／印尼文的觀眾會看到該語言；手機語言不在 5 語系（例如日文）、
+  且後端沒給 `lang` 的觀眾，會看到 **en**（舊版是 zh-TW）。⚠️ 後端 `/sdk/*` 目前尚未回傳 `lang`，API `lang` 這層
+  實際永遠是空的。**要維持繁中請 `configure(..., lang = "zh-TW")`。**
+- API `lang` 接上（`livebuy`）：`LivebuyWidgetCore` 載入第一頁時，把 `/sdk/widget` 回應的 `lang` 寫入語言來源（對齊
+  iOS）；headless 單次 `LivebuySDK.fetchWidget` 仍不寫入任何全域狀態。
+- ⚠️ **drop-in（reference-ui）文案跟著目前語言顯示**：以前所有文案寫死繁中；現在依上述優先序顯示 5 語系之一。
+  字串表缺 key 時依序退回「目前語言 → `en` → key 本身」；收到不在 5 語系的語言碼（或讀不到語言來源）視為 `en`。
+- ⚠️ **`LANGUAGE_CHANGED` 改為「目前語言實際改變才派發」**（`livebuy`）：`setLanguage` 設成目前已生效的語言不再派發；
+  新增 API `lang` 到達、`configure`、執行中系統語言變更三種來源。SDK 內部重繪 broadcast `tv.livebuy.sdk.LOCALE_CHANGED`
+  同樣只在實際改變時送出。保底改 `en` 後，`from` 可能是 `en`。依賴事件次數或來源的 host 請改以 `params.to` 為準、可重入。
+- ⚠️ **加入購物車（`POST /sdk/video/addcart`）與追蹤回報（`/sdk/video/addcart/track`）送出的 `lang` 跟著新優先序**
+  （`livebuy`）。後端只用它決定回應 message 語言，以及訪客加購且沒有暱稱時推給同場觀眾的購買通知名稱（「有人」／
+  `Someone`／`Seseorang`）。不影響建單、價格、庫存。
+- zh-TW 文案 2 處統一為 iOS 寫法（`livebuy-reference-ui`）：領獎失敗提示「若持續發生請聯繫客服」→「若持續發生，請聯繫
+  客服」（`win_fail_notice`）；暱稱設定一般錯誤「發生錯誤，請稍後再試」→「暱稱設定失敗，請稍後再試」
+  （`nickname_retryable_error`）。
+- 中獎／活動入口的無障礙語意（`livebuy-reference-ui`）：改宣告 `Role.Button`，且 TalkBack 只念 label（「查看中獎」／
+  「參加活動」），不再接著念底部「領獎」／「活動」文字（對齊 iOS `Button`＋`accessibilityLabel`）。像素不變。
+
+### Removed（⚠️ BREAKING）
+
+- ⚠️ **core AAR（`tv.livebuy:livebuy`）不再帶 78 個 string 資源**：刪除 `res/values{,-en,-zh-rCN,-ms-rMY,-id-rID}/strings.xml`，
+  並移除 internal 查字 `LBLocalization.getString`。這些資源從未文件化，但 Android library 沒有 `public.xml` 時資源預設
+  public；host 若在程式寫 `tv.livebuy.sdk.R.string.<key>` 或在 XML 寫 `@string/<key>` 引用它們，會編譯失敗——請改用
+  自己的字串。附帶好處：host 自己的同名 string（如 `share`、`back`）不再和 core 資源合併衝突。被移除的 key：
+  `video_live`, `video_film`, `video_replay`, `replay_tag`, `video_unmute`, `skip_start`, `subtitle_open`,
+  `subtitle_close`, `no_subtitle`, `replay`, `play_now`, `next_timeout`, `back`, `share`, `goods`, `goods_search`,
+  `goods_intro`, `goods_intro_more`, `goods_other`, `goods_no`, `hot_selling`, `almost_sold_out`, `sold_out`,
+  `select_spec`, `number`, `surplus`, `surplus_min`, `add_cart`, `add_cart_to`, `show_cart`, `await_add`, `awaited`,
+  `subscribe_btn`, `subscribed`, `contact_shop`, `video_desc`, `video_message`, `powered_livebuy`, `go_diversion`,
+  `go_diversion_tip`, `guide_bag`, `guide_bag_msg`, `comment_tit`, `comment_holder`, `comment_send`, `comment_new_btn`,
+  `back_live`, `live_price`, `live_end`, `live_end2`, `live_time`, `live_desc`, `live_info`, `notice`, `comment_top`,
+  `video_toshop`, `video_tochat`, `customer_service`, `guest_name_edit`, `guest_comment`, `guest_name_tip`, `guest_name`,
+  `guest_existing`, `guest_sub`, `sold_out_soon`, `introducing`, `goods_restock_notice`, `goods_restock_noticed`,
+  `goods_restock_success`, `goods_restock_cancel`, `unlimited`, `subscribe`, `activity_user_purchased`,
+  `activity_user_joined`, `activity_user_won`, `chat_requires_login`, `not_live`, `rate_limited`。
+  SDK 內部錯誤碼字串（如 `guest_existing`）逐字不變；使用者可見的錯誤文案改由 reference-ui 字串表負責。
+- ⚠️ **`ChatView` 售完自動注入移除**（`livebuy`）：以前商品售完時會往聊天訊息緩衝塞一列寫死英文的
+  `"<商品名> - sold out"`，可經 public 的 `LivebuyPlayerView.chatMessages`／`chatView.messages`／
+  `chatView.onMessagesUpdated` 讀到（任何內建畫面都沒顯示它）；現在不再產生。依賴這列的 host 請改用商品資料
+  （輪詢結果中各商品的 `soldOut` 旗標由 0 變 1）自行判斷。`ChatView.notifiedSoldOutIds`、`LivebuyPlayerView.notifiedSoldOutIds` 改為
+  `@Deprecated`（SDK 不再讀寫，原始碼相容），下個 major 移除。
+
+### Fixed
+
+- 中獎入口補上 `contentDescription`（`livebuy-reference-ui`，`win_entry_a11y`「查看中獎」，隨語言切換）：以前 TalkBack
+  讀不出這顆按鈕的用途。
+
+> **驗證範圍**：單元測試（語言優先序純函式、listener 註冊表、Robolectric 執行中切換語言、字串表完整性／與 iOS 逐字
+> 對照、`R$string` 不含舊 key、`errorCode` 值鎖定、入口 semantics）與 Roborazzi baseline 通過（僅重錄 `win-claim-fail`
+> 一張，因 zh-TW 文案多一個全形逗號）。**未經真機驗證**——各系統語言冷啟動、執行中改系統語言／per-app 語言（尤其
+> Android 12 以下 AppCompat 模擬）、TalkBack 念法待實機確認（見 `docs/release/v4.29.0-e2e-checklist.md`）。
+
 ## [4.28.0] - 2026-10-14
 
 > **Minor（iOS + Android lockstep）。** Android、iOS 皆自 `4.27.0` 升級；三模組（`livebuy`／`livebuy-ui`／
