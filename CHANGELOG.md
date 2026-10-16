@@ -11,6 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.30.1] - 2026-10-16
+
+> **Patch（Android-only）。** 只動 `livebuy-reference-ui` 的商品列名稱前標籤量測、**無 BREAKING**、零 public 符號變動；
+> iOS 不發，維持 `4.30.0`。完整敘述見 [`docs/release-notes/v4.30.1.md`](../docs/release-notes/v4.30.1.md)。
+
+### Added
+
+- （無）
+
+### Changed
+
+- （無）
+
+### Fixed
+
+- **商品列名稱前標籤在 `MaterialTheme` host 下被截斷**（`livebuy-reference-ui`）：預留框與實際畫字原本用不同字型樣式，
+  畫字承接 host 字距後比框寬，長標籤（en「🔥 Almost Sold Out」、ms-MY「🔥 Hampir Habis Dijual」）尾端被裁。現在兩者
+  用同一個樣式，並且不承接 host 的行高與字距（對齊 iOS）——標籤完整顯示，也不再隨 host 行高變高。未經真機驗證。
+
 ## [4.30.0] - 2026-10-16
 
 > **Minor（iOS + Android lockstep）。** Android、iOS 皆自 `4.29.0` 升級；三模組（`livebuy`／`livebuy-ui`／
