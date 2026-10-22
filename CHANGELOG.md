@@ -11,6 +11,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.30.2] - 2026-10-22
+
+> **Patch（iOS + Android 同發）。** Android 自 `4.30.1` 升級；iOS 同版號 `4.30.2`（iOS 自 `4.30.0` 直接升級，沒有
+> `4.30.1`）。只動 `livebuy-reference-ui`（drop-in 像素層）的 `LivebuyWidget`／`LivebuyLiveEntry`；`livebuy`（core）與
+> `livebuy-ui` 原始碼零變更，僅隨版號。**無 BREAKING**：既有公開建構式與屬性的 JVM 簽章與 `4.30.1` 相同，用 `4.30.1`
+> 編譯好的消費端不必重新編譯。完整敘述見 [`docs/release-notes/v4.30.2.md`](../docs/release-notes/v4.30.2.md)。
+
+### Added
+
+- （無）公開 API 面與 `4.30.1` 相同：入口卡主題等待方法 `runThemeResolution()` 為 `internal`，只供 drop-in
+  `LivebuyLiveEntry` 內部呼叫（`rb-android-live-entry-run-theme-resolution-internal`）。
+
+### Changed
+
+- **drop-in `LivebuyWidget` 等待 `configure()` 的上限由約 5 秒延長為約 31.5 秒**（`livebuy-reference-ui`）：等待間隔
+  100／200／400／800 ms 後每秒一次，最多 34 次，與 iOS／RN／Flutter 共用同一套排程。首載的判斷條件改為「SDK 實例已建立」
+  （`LivebuySDK.currentShopId() != null`），不再等 `/sdk/config` 抓取完成。host 的 `configure()` 晚於 widget 掛載時，
+  列表在 configure 後（最慢約 1 秒）自行載入，不必等週期刷新；刷新間隔設 0 也會載入。全部等待失敗時維持原本行為
+  （跳過首載、週期刷新照常）。
+- **`LivebuyWidget`／`LivebuyLiveEntry` 的主題在 `sdkConfig` 可讀後重新解析**：原本只在掛載時讀一次，未 configure 時
+  一直是預設色；現在 configure 完成後改為商家設定的主題色。`LivebuyLiveEntryController.theme` 改為 Compose state
+  （setter 為 `private`，公開 getter 不變）。
+
+### Fixed
+
+- `configure()` 晚於 drop-in `LivebuyWidget` 掛載時，列表要等週期刷新（預設 30 秒）才出現、刷新間隔為 0 時永久空白
+  （起因見 livebuy-flutter-sdk issue #3）。未經實機驗證。
+
 ## [4.30.1] - 2026-10-16
 
 > **Patch（Android-only）。** 只動 `livebuy-reference-ui` 的商品列名稱前標籤量測、**無 BREAKING**、零 public 符號變動；
