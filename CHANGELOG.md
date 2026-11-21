@@ -11,6 +11,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.32.0] - 2026-11-21
+
+> **Minor（iOS + Android 同發，皆自 `4.31.0`）。** 搶購場改用下標模式，動到 `livebuy`（core）、`livebuy-ui`（view-model）、`livebuy-reference-ui`。**源碼面無 BREAKING**（只加不減、
+> 新參數都有預設值）；**⚠️ 行為改變**：搶購場直播中 drop-in／view-model 的「加入購物車」改為下標。
+> 🔴 需要後端 `sdk-live-bid`；發版當下正式機尚未部署，部署前搶購場下標會失敗。完整敘述見
+> [`docs/release-notes/v4.32.0.md`](../docs/release-notes/v4.32.0.md)。
+
+### Added
+
+- core：`LivebuySDK.placeBid(...)` → `LBBidResult`、`LivebuySDK.confirmBidWin(videoId, buyingIds)`（`List<Long>`／`List<String>` 兩個多載，`suspend`）→ `List<LBBidConfirmItem>`；搶購登記 id 為 64 位元 `Long`。訪客下標派 `AUTH_REQUIRED`（`trigger_action="bid_place"`）。
+- core：通知型事件 `BID_PLACE_RESULT`、`BID_WON`（SDK 輪詢到得標後自動取單再派發）。
+- core：`CART_ADD_REQUEST` 新增 `cart_origin`（`normal`／`award`／`bid_won`），得標另帶 `buying_id`、`shop_cart_synced`
+  （`true` 時 host 應忽略，不要重複入車）。
+- core：`LBChannel.saleKeywordRequired`；`LBProduct`／`LBSpec` 的 `saleKeyword`、`buyingNum`、`totalBuyingNum`、`limitNum`。
+- core：搶購場直播中、已登入時，聊天室「關鍵字＋數量」自動下標。
+- view-model：商品明細 `bidWaiting`／`limitNum`／`buyButtonHidden`、`bidOutcome`、得標視窗狀態 `bidWon`（確認／取消）。
+- reference-ui：「正在等待結果...」橫幅、「每人限購 N 組」、下標結果 toast、得標視窗「恭喜搶購成功」（商家 logo 或商店圖示、
+  多筆滑動＋分頁圓點）；8 個新字串 key（五語系）。
+
+### Changed
+
+- ⚠️ view-model：搶購場直播中 `addToCart()` 改呼叫下標（不打 addcart），結果寫入 `bidOutcome`，成功時關閉商品明細；有限購時
+  數量上限為 `min(庫存, limitNum)`；直播管家搶購場沒有搶購關鍵字的商品隱藏購買鈕。非搶購場、非直播中不變。
+- reference-ui：領獎確認視窗商品提醒句 `win_submit_note_product` 的 en、id-ID 改用網頁版原句
+  `*The prize will be automatically added as pending checkout items.`。
+
+### Fixed
+
+- 測試：`livebuy-reference-ui` release variant 單元測試 18 個固定失敗（compose rule 測試誤放共用 `src/test`）；搬到 `src/testDebug`。不影響發佈的 AAR。
+
 ## [4.31.0] - 2026-11-18
 
 > **Minor（iOS + Android 同發，皆自 `4.30.2`）。** 只改 `livebuy-reference-ui` 字串表的值；`livebuy`（core）與 `livebuy-ui`
