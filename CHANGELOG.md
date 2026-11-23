@@ -11,6 +11,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.33.1] - 2026-11-23
+
+> **Patch（Android-only）。** 只動 `livebuy`（core）的 `LivebuyPlayerView.togglePlayPause()` 判斷方式、**無 BREAKING**、
+> 零 public 符號變動；`livebuy-ui`／`livebuy-reference-ui` 原始碼零變更，僅隨版號。iOS 不發，維持 `4.33.0`。完整敘述見
+> [`docs/release-notes/v4.33.1.md`](../docs/release-notes/v4.33.1.md)。
+
+### Added
+
+- （無）
+
+### Changed
+
+- （無）
+
+### Fixed
+
+- **暫停後第一次按播放鈕看似沒反應**（`livebuy`）：`LivebuyPlayerView.togglePlayPause()` 原本看 `playerState == PLAYING` 決定方向，
+  但宿主 `pause()`、自動子母畫面 fallback 暫停、`LivebuyPlayerActivity` 生命週期暫停都不會更新 `playerState`，第一下按播放會
+  「再暫停一次」。現在改看觀眾正在看的那個 engine（片頭期間是片頭 engine）的播放意圖（`playWhenReady`）：暫停後第一下就播放。
+  drop-in 播放鈕、core 播放控制鈕、片頭期間都適用。`ENDED`／`END_SCREEN_SHOWN`／`ERROR`／`AWAITING_LIVE` 時按下維持「播放」。
+  - 行為差異：`LOADING`／`BUFFERING` 時按下，ExoPlayer（VOD／回放／片頭）會暫停，但緩衝完成後狀態可能短暫回報 `PLAYING`
+    （影片實際是暫停的；下一次按仍會正確播放）；IVS 直播在 READY 時會自動播放，載入中按下的暫停會被蓋掉，與舊行為相同。
+  - toggle 暫停後宿主再呼叫 `play()`，下一次 toggle 會暫停（舊行為會再呼叫一次 `play()`）。
+  - 未經真機驗證。
+
 ## [4.33.0] - 2026-11-23
 
 > **Minor（iOS + Android 同發）。** 只動 `livebuy`（core）、**新增公開 API、無 BREAKING**（只有新增，沒有改名、移除或改簽章；
