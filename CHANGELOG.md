@@ -11,6 +11,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > GitHub Pages (`https://ariesweng.github.io/livebuy-android-sdk/`). The published Maven `version` is
 > read from `LIVEBUY_MAVEN_VERSION` at release time; the channel itself is version-agnostic.
 
+## [4.33.0] - 2026-11-23
+
+> **Minor（iOS + Android 同發）。** 只動 `livebuy`（core）、**新增公開 API、無 BREAKING**（只有新增，沒有改名、移除或改簽章；
+> `LivebuyPlayerSource` 介面不變）。完整敘述見 [`docs/release-notes/v4.33.0.md`](../docs/release-notes/v4.33.0.md)。
+
+### Added
+
+- **宿主攔截後恢復播放器**：`LivebuySDK.resumeAfterIntercept()`（`@JvmStatic`）。宿主同步攔截 `PRODUCT_CLICK`／`AUTH_REQUIRED`／
+  `INFO_CUSTOMER_SERVICE` 且 `autoPipOnIntercept = true` 時，SDK 會自動進子母畫面，進不了（例如沒有子母畫面功能的裝置）就暫停；
+  宿主關掉自己的頁面回來後呼叫它：子母畫面中 → 回到全螢幕；因 fallback 暫停（且攔截前正在播放）→ 恢復播放；使用者自己暫停 →
+  不恢復。SDK 以 `WeakReference` 記住最近一次觸發自動子母畫面的播放器（View 或 Activity）；沒有紀錄或播放器已釋放時不做事；
+  從其他執行緒呼叫會 post 到主執行緒。
+- `LivebuyPlayerView.enterPiP()`／`exitPiP()`／`isPiPActive`／`resumeAfterIntercept()`；`LivebuyPlayerActivity.resumeAfterIntercept()`
+  （轉給內部 `LivebuyPlayerView`）。`enablePiP` 開著但不能進子母畫面（無宿主 Activity、API < 26、裝置沒有子母畫面功能、系統拒絕）
+  時，`enterPiP()` 不進入、改派一次 `PIP_STATE_CHANGE(active = false)`；`enablePiP` 關閉時完全不做事。`exitPiP()` 以
+  `ActivityManager.getAppTasks()` + `AppTask.moveToFront()` 把子母畫面 task 帶回前景（不需新權限、不建新 Activity）。
+- `PiPHelper.exitPiP(activity): Boolean`（`PiPHelper` 為 public object，上述 `exitPiP()` 的底層；找不到 task 回 `false`、不拋例外）。
+
+### Changed
+
+- `LivebuyPlayerActivity.onStop()` 的生命週期暫停改走不清除 fallback 記號的內部路徑（暫停行為本身不變），讓宿主在上面開自己的
+  Activity 回來後仍能恢復。
+- 自動子母畫面的觸發條件、fallback 暫停、`CAPABILITY_WARNING`／`auto_pip_fallback` metric、View 模式 `requested = true` 請求事件
+  與既有 `PIP_STATE_CHANGE` 時機都不變；不新增事件種類。內部 `PlaybackEngine` 介面新增 `playWhenReady`（`internal`，宿主不可見）。
+
+### Fixed
+
+- （無）
+
 ## [4.32.3] - 2026-11-23
 
 > **Patch（iOS + Android 同發）。** 只動 `livebuy-ui`（view-model）、**無 BREAKING**、零 public 符號變動。完整敘述見
